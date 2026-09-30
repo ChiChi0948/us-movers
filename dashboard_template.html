@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b5d8a">
+<title>美股重大漲跌</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2733; --muted:#66727f; --line:#dde4ec; --head:#eef3f8; --bg:#ffffff; --row:#f7f9fb;
+  --accent:#2b5d8a; --up:#c8312e; --down:#1d8049; --chip:#fff4e5; --chip-ink:#9a5b00;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#e4e9ef; --muted:#98a4b1; --line:#2c3743; --head:#1c2631; --bg:#121820; --row:#17202a;
+  --accent:#7fb0dd; --up:#ff6b64; --down:#4cc184; --chip:#3a2d17; --chip-ink:#f2c071;}}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:14px/1.5 "Noto Sans TC","IBM Plex Sans",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:1440px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 16px;margin-bottom:12px}
+h1{font-size:18px;font-weight:700;margin:0;padding-left:10px;border-left:4px solid var(--accent)}
+.meta{color:var(--muted);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:12px}
+.nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+button,select,input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible,select:focus-visible,input:focus-visible,th:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.stat{color:var(--muted)}
+[hidden]{display:none!important}
+input[type=date]{padding:5px 8px}
+input[type=search]{flex:1;min-width:220px}
+.sortm{display:none}
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:1180px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{background:var(--head);font-weight:500;font-size:13px;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0}
+th.sorted::after{content:attr(data-dir);margin-left:3px;color:var(--accent)}
+tbody tr:nth-child(even){background:var(--row)}
+.num{text-align:right;font-family:"IBM Plex Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nw{white-space:nowrap}
+.tk{font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--bg)}
+tbody tr:nth-child(even) td.tk{background:var(--row)}
+.name{white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.pos{color:var(--up)} .neg{color:var(--down)}
+.ev{min-width:320px;max-width:480px;font-size:13px}
+.earn{display:inline-block;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:0 5px;margin-right:4px;font-size:12px}
+.hot{font-weight:600}
+a{color:var(--accent)}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+.note{color:var(--muted);font-size:12px;margin-top:10px}
+
+/* 手機：表格改卡片 */
+@media (max-width:760px){
+  .wrap{padding:12px}
+  .sortm{display:block}
+  input[type=search]{min-width:100%;order:9}
+  .scroller{border:0;overflow:visible}
+  table{min-width:0}
+  thead{display:none}
+  tbody,tr,td{display:block}
+  tbody tr{display:grid;grid-template-columns:repeat(6,1fr);gap:6px 8px;padding:12px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--bg)!important}
+  td{padding:0;border:0;text-align:left!important;grid-column:span 2;min-width:0}
+  td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted);font-family:"Noto Sans TC",system-ui,sans-serif}
+  td.c-rank{grid-column:span 1;color:var(--muted)} td.c-rank::before{display:none}
+  td.tk{grid-column:span 1;position:static;background:none!important;font-size:16px} td.tk::before{display:none}
+  td.name{grid-column:span 4;max-width:none;align-self:center} td.name::before{display:none}
+  td.c-ret{grid-column:span 2;font-size:18px;font-weight:600}
+  td.ev,td.c-src{grid-column:1/-1;min-width:0;max-width:none}
+  td.empty{grid-column:1/-1;text-align:center!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title">美股重大漲跌</h1>
+    <span class="meta" id="meta"></span>
+  </header>
+  <div class="bar">
+    <div class="seg nav">
+      <button id="mDay" aria-pressed="true">單日</button>
+      <button id="mRange" aria-pressed="false">區間</button>
+    </div>
+    <div class="nav" id="dayBox">
+      <button id="older" aria-label="前一個交易日">◀</button>
+      <select id="date" aria-label="選擇日期"></select>
+      <button id="newer" aria-label="後一個交易日">▶</button>
+    </div>
+    <div class="nav" id="rangeBox" hidden>
+      <input type="date" id="from" aria-label="起日"><span>～</span><input type="date" id="to" aria-label="迄日">
+      <button data-p="7">1週</button><button data-p="30">1月</button><button data-p="91">3月</button><button data-p="182">6月</button><button data-p="365">1年</button>
+    </div>
+    <div class="seg nav" id="groups"></div>
+    <div class="seg nav">
+      <button id="up" aria-pressed="true">漲幅榜</button>
+      <button id="down" aria-pressed="false">跌幅榜</button>
+    </div>
+    <select id="sortSel" class="sortm" aria-label="排序"></select>
+    <span class="stat" id="stat"></span>
+    <input type="search" id="q" placeholder="輸入代號或公司名，查看歷次上榜紀錄">
+  </div>
+  <div class="scroller"><table><thead><tr id="head"></tr></thead><tbody id="body"><tr><td class="empty">載入中…</td></tr></tbody></table></div>
+  <p class="note">市值以現行股數 × 當日收盤估算。1M/3M/6M/YTD/1Y 預設計算到事件前一日收盤。量比 ≥ 2 以粗體標示。區間模式列出期間內每天的上榜紀錄，點欄位可排序。
+    <a id="csv" href="data/movers_history.csv" download>下載完整 CSV</a></p>
+</div>
+<script>
+const INLINE=/*__DATA__*/null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct=v=>v==null?"—":`<span class="${v>0?"pos":v<0?"neg":""}">${v>0?"+":""}${(v*100).toFixed(2)}%</span>`;
+const shift=(d,n)=>{const t=new Date(d+"T00:00:00Z");t.setUTCDate(t.getUTCDate()-n);return t.toISOString().slice(0,10)};
+const unpack=p=>p.rows.map(r=>Object.fromEntries(p.cols.map((c,i)=>[c,r[i]])));
+
+let MAN=null,DATA=[];const loaded=new Set();
+let st={mode:"day",group:null,side:"up",date:null,from:null,to:null,key:null,dir:1,q:""};
+
+const COLS=[
+  {k:"date",l:"日期",only:"multi",cls:"nw",f:r=>r.date},
+  {k:"group",l:"組別",only:"search",cls:"nw",f:r=>esc(r.group)},
+  {k:"rank",l:"排名",n:1,cls:"c-rank",f:r=>(st.q?(r.side==="up"?"漲":"跌"):"")+r.rank},
+  {k:"ticker",l:"Ticker",cls:"tk",f:r=>esc(r.ticker)},
+  {k:"name",l:"公司名稱",cls:"name",f:r=>`<span title="${esc(r.sector)}">${esc(r.name)}</span>`},
+  {k:"ret",l:"日內報酬",n:1,cls:"c-ret",f:r=>pct(r.ret)},
+  {k:"rel",l:"相對 SPY",n:1,f:r=>pct(r.rel)},
+  {k:"vr",l:"量 / 60日均量",n:1,f:r=>r.vr==null?"—":`<span class="${r.vr>=2?"hot":""}">${r.vr.toFixed(2)}x</span>`},
+  {k:"mcap",l:"市值 (USD mn)",n:1,f:r=>r.mcap==null?"—":r.mcap.toLocaleString("en-US",{maximumFractionDigits:0})},
+  {k:"r1m",l:"1M",n:1,f:r=>pct(r.r1m)},
+  {k:"r3m",l:"3M",n:1,f:r=>pct(r.r3m)},
+  {k:"r6m",l:"6M",n:1,f:r=>pct(r.r6m)},
+  {k:"ytd",l:"YTD",n:1,f:r=>pct(r.ytd)},
+  {k:"r1y",l:"1Y",n:1,f:r=>pct(r.r1y)},
+  {k:"event",l:"事件",cls:"ev",f:r=>{let e=esc(r.event||"");if(e.startsWith("【財報】"))e=e.slice(4);return (r.earn?'<span class="earn">財報</span>':"")+e}},
+  {k:"src",l:"資訊來源",cls:"c-src",f:r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.src||"連結")}</a>`:"—"},
+];
+
+/* ---------- 資料載入（網站版依年份按需下載） ---------- */
+async function need(years){
+  const todo=years.filter(y=>!loaded.has(y)&&MAN.years.includes(y));
+  if(!todo.length)return;
+  $("stat").textContent="載入資料中…";
+  await Promise.all(todo.map(async y=>{
+    const r=await fetch(`data/${y}.json`,{cache:y===MAN.years[0]?"no-cache":"default"});
+    if(!r.ok)throw new Error(`data/${y}.json ${r.status}`);
+    DATA.push(...unpack(await r.json()));loaded.add(y);
+  }));
+}
+function yearsNeeded(){
+  if(st.q)return MAN.years;
+  if(st.mode==="range")return MAN.years.filter(y=>y>=st.from.slice(0,4)&&y<=st.to.slice(0,4));
+  return [st.date.slice(0,4)];
+}
+let seq=0;
+async function update(){
+  const my=++seq;
+  if(!INLINE){try{await need(yearsNeeded())}catch(e){
+    $("body").innerHTML=`<tr><td class="empty" colspan="16">資料載入失敗（${esc(e.message)}），請重新整理頁面。</td></tr>`;return}}
+  if(my===seq){render();saveHash();}
+}
+
+/* ---------- 篩選與繪製 ---------- */
+function rows(){
+  let rs;const G=r=>(r.group||MAN.groups[0])===st.group;
+  if(st.q){const q=st.q.toLowerCase();
+    rs=DATA.filter(r=>r.ticker.toLowerCase()===q||String(r.name).toLowerCase().includes(q));
+    if(!st.key)rs.sort((a,b)=>b.date.localeCompare(a.date));}
+  else if(st.mode==="range"){rs=DATA.filter(r=>r.date>=st.from&&r.date<=st.to&&r.side===st.side&&G(r));
+    if(!st.key)rs.sort((a,b)=>b.date.localeCompare(a.date)||a.rank-b.rank);}
+  else rs=DATA.filter(r=>r.date===st.date&&r.side===st.side&&G(r));
+  if(st.key){const k=st.key;rs=[...rs].sort((a,b)=>{const x=a[k],y=b[k];if(x==null)return 1;if(y==null)return -1;
+    return (typeof x==="number"?x-y:String(x).localeCompare(String(y)))*st.dir;});}
+  return rs;
+}
+function render(){
+  const multi=st.q||st.mode==="range";
+  const cols=COLS.filter(c=>!c.only||(c.only==="search"&&st.q)||(c.only==="multi"&&multi));
+  $("dayBox").hidden=st.mode!=="day";$("rangeBox").hidden=st.mode!=="range";
+  const press=(id,on)=>$(id).setAttribute("aria-pressed",on);
+  press("mDay",st.mode==="day");press("mRange",st.mode==="range");press("up",st.side==="up");press("down",st.side==="down");
+  $("groups").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===st.group));
+  $("date").value=st.date;$("from").value=st.from;$("to").value=st.to;
+
+  $("head").innerHTML=cols.map(c=>`<th tabindex="0" data-k="${c.k}" class="${c.n?"num":""} ${st.key===c.k?"sorted":""}" data-dir="${st.dir>0?"▲":"▼"}">${c.l}</th>`).join("");
+  $("head").querySelectorAll("th").forEach(th=>{const go=()=>setSort(th.dataset.k,true);th.onclick=go;th.onkeydown=e=>{if(e.key==="Enter")go()}});
+  $("sortSel").value=st.key?`${st.key}|${st.dir}`:"";
+
+  const rs=rows();
+  $("body").innerHTML=rs.length?rs.map(r=>`<tr>${cols.map(c=>`<td data-l="${c.l}" class="${c.n?"num":""} ${c.cls||""}">${c.f(r)}</td>`).join("")}</tr>`).join("")
+    :`<tr><td class="empty" colspan="${cols.length}">${st.q?"找不到符合的紀錄，試試別的代號。":"這個條件沒有資料。"}</td></tr>`;
+
+  const any=DATA.find(r=>r.date===st.date);
+  const nTk=new Set(rs.map(r=>r.ticker)).size,nD=new Set(rs.map(r=>r.date)).size;
+  $("stat").textContent=st.q?`共 ${rs.length} 筆上榜紀錄`:st.mode==="range"?`${nD} 個交易日、${rs.length} 筆、${nTk} 檔`
+    :(any&&any.spy!=null?`當日 SPY ${any.spy>0?"+":""}${(any.spy*100).toFixed(2)}%`:"");
+  const sideTxt=st.side==="up"?"漲幅":"跌幅";
+  $("title").textContent=st.q?`搜尋「${st.q}」`:st.mode==="range"?`${st.group}｜${st.from} ～ ${st.to} ${sideTxt}榜`:`${st.group}｜日內${sideTxt}前 ${rs.length} 名`;
+  document.title=$("title").textContent+"｜美股重大漲跌";
+}
+function setSort(k,toggle){
+  const c=COLS.find(c=>c.k===k);
+  st.dir=toggle&&st.key===k?-st.dir:(c&&c.n?-1:1);st.key=k;render();
+}
+
+/* ---------- 網址保存狀態，方便分享或加書籤 ---------- */
+function saveHash(){
+  const p=new URLSearchParams({g:st.group,s:st.side});
+  if(st.mode==="range"){p.set("from",st.from);p.set("to",st.to)}else p.set("d",st.date);
+  if(st.q)p.set("q",st.q);
+  history.replaceState(null,"","#"+p.toString());
+}
+function loadHash(){
+  const p=new URLSearchParams(location.hash.slice(1));
+  if(MAN.groups.includes(p.get("g")))st.group=p.get("g");
+  if(["up","down"].includes(p.get("s")))st.side=p.get("s");
+  if(p.get("from")&&p.get("to")){st.mode="range";st.from=p.get("from");st.to=p.get("to")}
+  if(MAN.dates.includes(p.get("d")))st.date=p.get("d");
+  if(p.get("q")){st.q=p.get("q");$("q").value=st.q}
+}
+
+/* ---------- 啟動 ---------- */
+async function init(){
+  if(INLINE){MAN=INLINE.manifest;DATA=unpack(INLINE.pack);MAN.years.forEach(y=>loaded.add(y));$("csv").href="data/movers_history.csv";}
+  else{const r=await fetch("data/manifest.json",{cache:"no-cache"});if(!r.ok)throw new Error("manifest "+r.status);MAN=await r.json();}
+  if(!MAN.dates.length){$("body").innerHTML=`<tr><td class="empty">還沒有資料，請先執行一次 us_movers.py。</td></tr>`;return}
+  st.group=MAN.groups[0];st.date=MAN.dates[0];st.to=MAN.dates[0];st.from=shift(st.to,30);
+  $("meta").textContent="資料更新："+new Date(MAN.updated).toLocaleString("zh-TW",{hour12:false})+`（${MAN.dates.length} 個交易日）`;
+  $("date").innerHTML=MAN.dates.map(d=>`<option>${d}</option>`).join("");
+  const oldest=MAN.dates[MAN.dates.length-1];$("from").min=$("to").min=oldest;$("from").max=$("to").max=MAN.dates[0];
+  $("groups").innerHTML=MAN.groups.map(g=>`<button data-g="${esc(g)}">${esc(g)}</button>`).join("");
+  $("sortSel").innerHTML=`<option value="">預設排序</option>`+COLS.filter(c=>c.n&&c.k!=="rank").map(c=>
+    `<option value="${c.k}|-1">${c.l} 高→低</option><option value="${c.k}|1">${c.l} 低→高</option>`).join("");
+  loadHash();
+
+  const reset=fn=>()=>{fn();st.key=null;update()};
+  $("groups").querySelectorAll("button").forEach(b=>b.onclick=reset(()=>st.group=b.dataset.g));
+  $("mDay").onclick=reset(()=>st.mode="day");
+  $("mRange").onclick=reset(()=>st.mode="range");
+  $("up").onclick=reset(()=>st.side="up");
+  $("down").onclick=reset(()=>st.side="down");
+  $("date").onchange=reset(()=>st.date=$("date").value);
+  $("older").onclick=reset(()=>{const i=MAN.dates.indexOf(st.date);if(i<MAN.dates.length-1)st.date=MAN.dates[i+1]});
+  $("newer").onclick=reset(()=>{const i=MAN.dates.indexOf(st.date);if(i>0)st.date=MAN.dates[i-1]});
+  $("from").onchange=reset(()=>{st.from=$("from").value;if(st.from>st.to)st.to=st.from});
+  $("to").onchange=reset(()=>{st.to=$("to").value;if(st.to<st.from)st.from=st.to});
+  $("rangeBox").querySelectorAll("button[data-p]").forEach(b=>b.onclick=reset(()=>{st.to=MAN.dates[0];st.from=shift(MAN.dates[0],+b.dataset.p)}));
+  $("sortSel").onchange=e=>{const v=e.target.value;if(!v){st.key=null;render();return}const[k,d]=v.split("|");st.key=k;st.dir=+d;render()};
+  let tmr;$("q").oninput=e=>{clearTimeout(tmr);tmr=setTimeout(reset(()=>st.q=e.target.value.trim()),250)};
+  update();
+}
+init().catch(e=>{$("body").innerHTML=`<tr><td class="empty">載入失敗（${esc(e.message)}）。若是直接雙擊 site/index.html，瀏覽器會擋讀取，請改開 dashboard.html 或部署到 Pages。</td></tr>`});
+</script>
+</body>
+</html>
