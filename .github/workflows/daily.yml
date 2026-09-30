@@ -1,0 +1,61 @@
+# GitHub：每個交易日抓資料 → 存回 repo → 部署到 GitHub Pages
+# 設定：Settings → Pages → Source 選「GitHub Actions」
+#       Settings → Actions → General → Workflow permissions 選「Read and write」
+#       （選用）Settings → Secrets and variables → Actions
+#           Secrets：GEMINI_API_KEY / ANTHROPIC_API_KEY
+#           Variables：MOVERS_ARGS，例如  --llm gemini --llm-delay 6 --llm-top 10
+name: daily-movers
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"      # UTC 22:30 = 美東收盤後，台灣早上 6:30
+  workflow_dispatch:
+    inputs:
+      args:
+        description: "這次額外參數，例如回溯：--start 2026-01-01 --no-news"
+        required: false
+        default: ""
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: movers
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: 抓取資料並產生網站
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MOVERS_ARGS: ${{ vars.MOVERS_ARGS }}
+          EXTRA_ARGS: ${{ github.event.inputs.args }}
+        run: python us_movers.py $MOVERS_ARGS $EXTRA_ARGS
+      - name: 把歷史資料存回 repo
+        run: |
+          git config user.name "movers-bot"
+          git config user.email "movers-bot@users.noreply.github.com"
+          git add data
+          git commit -m "movers $(date -u +%F)" || echo "no changes"
+          git push
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
