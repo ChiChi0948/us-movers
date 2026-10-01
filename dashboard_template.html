@@ -36,6 +36,19 @@ button:focus-visible,select:focus-visible,input:focus-visible,th:focus-visible{o
 input[type=date]{padding:5px 8px}
 input[type=search]{flex:1;min-width:220px}
 .sortm{display:none}
+.tbox{position:relative;flex:1;min-width:220px}
+.tbox input{width:100%}
+.sug{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:360px;overflow:auto;padding:4px}
+.sug .hd{font-size:11px;color:var(--muted);padding:6px 8px 2px}
+.sug .it{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer}
+.sug .it[aria-selected="true"],.sug .it:hover{background:var(--head)}
+.sug .it small{color:var(--muted);white-space:nowrap}
+.sug .why{color:var(--muted);font-size:12px;margin-left:6px}
+.sug .chips{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 8px}
+.sug .chips button{font-size:12px;padding:2px 9px;border-radius:12px}
+.tchip{background:var(--accent);border-color:var(--accent);color:#fff;border-radius:14px;padding:4px 10px}
+.dim{opacity:.4}
 .scroller{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
 table{border-collapse:collapse;width:100%;min-width:1180px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
@@ -51,15 +64,27 @@ tbody tr:nth-child(even) td.tk{background:var(--row)}
 .ev{min-width:320px;max-width:480px;font-size:13px}
 .earn{display:inline-block;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:0 5px;margin-right:4px;font-size:12px}
 .hot{font-weight:600}
+a.cat{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)}
+a.cat.hot2{color:var(--accent)}
+a.chip{display:inline-block;white-space:nowrap;border:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:10px;padding:0 7px;margin:1px 3px 1px 0;font-size:12px;line-height:1.6}
+td.c-cat2{min-width:150px;max-width:230px}
 a{color:var(--accent)}
 .empty{padding:32px;text-align:center;color:var(--muted)}
 .note{color:var(--muted);font-size:12px;margin-top:10px}
+dialog{max-width:760px;width:calc(100% - 24px);border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{font-size:16px;margin:0 0 6px}
+dialog ol{margin:6px 0 10px;padding-left:20px;color:var(--muted);font-size:13px}
+dialog textarea{width:100%;height:260px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--ink);background:var(--row);border:1px solid var(--line);border-radius:6px;padding:8px}
+.drow{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;align-items:center}
+.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* 手機：表格改卡片 */
 @media (max-width:760px){
   .wrap{padding:12px}
   .sortm{display:block}
   input[type=search]{min-width:100%;order:9}
+  .tbox{min-width:100%;order:8}
   .scroller{border:0;overflow:visible}
   table{min-width:0}
   thead{display:none}
@@ -71,6 +96,7 @@ a{color:var(--accent)}
   td.tk{grid-column:span 1;position:static;background:none!important;font-size:16px} td.tk::before{display:none}
   td.name{grid-column:span 4;max-width:none;align-self:center} td.name::before{display:none}
   td.c-ret{grid-column:span 2;font-size:18px;font-weight:600}
+  td.c-cat{grid-column:span 3}
   td.ev,td.c-src{grid-column:1/-1;min-width:0;max-width:none}
   td.empty{grid-column:1/-1;text-align:center!important}
 }
@@ -102,13 +128,30 @@ a{color:var(--accent)}
       <button id="down" aria-pressed="false">跌幅榜</button>
     </div>
     <select id="sortSel" class="sortm" aria-label="排序"></select>
+    <button id="aiBtn" title="把目前表格清單複製成給 Claude / Gemini 的指令">📋 複製給 AI</button>
     <span class="stat" id="stat"></span>
-    <input type="search" id="q" placeholder="輸入代號或公司名，查看歷次上榜紀錄">
+    <div class="tbox">
+      <input type="search" id="tq" autocomplete="off" placeholder="🏷 找細分類（例：光模塊、HBM、散熱）" aria-label="找細分類"
+             role="combobox" aria-expanded="false" aria-controls="tsug">
+      <div id="tsug" class="sug" role="listbox" hidden></div>
+    </div>
+    <span id="tchip"></span>
+    <input type="search" id="q" placeholder="輸入代號、公司名或分類（例如 光通訊），查看歷次上榜紀錄">
   </div>
   <div class="scroller"><table><thead><tr id="head"></tr></thead><tbody id="body"><tr><td class="empty">載入中…</td></tr></tbody></table></div>
   <p class="note">市值以現行股數 × 當日收盤估算。1M/3M/6M/YTD/1Y 預設計算到事件前一日收盤。量比 ≥ 2 以粗體標示。區間模式列出期間內每天的上榜紀錄，點欄位可排序。
     <a id="csv" href="data/movers_history.csv" download>下載完整 CSV</a></p>
 </div>
+<dialog id="aiDlg">
+  <h2>複製給 Claude / Gemini</h2>
+  <ol>
+    <li>按「複製」，貼到 Claude 或 Gemini 對話（記得開啟網路搜尋）。</li>
+    <li>把 AI 回覆的 CSV 內容，貼到 repo 的 <code>data/events_manual.csv</code> 最下方並 Commit。</li>
+    <li>約 1～2 分鐘後網站自動更新事件欄。</li>
+  </ol>
+  <textarea id="aiText" readonly></textarea>
+  <div class="drow"><span class="stat" id="aiMsg"></span><button id="aiClose">關閉</button><button id="aiCopy" class="primary">複製</button></div>
+</dialog>
 <script>
 const INLINE=/*__DATA__*/null;
 const $=id=>document.getElementById(id);
@@ -118,14 +161,17 @@ const shift=(d,n)=>{const t=new Date(d+"T00:00:00Z");t.setUTCDate(t.getUTCDate()
 const unpack=p=>p.rows.map(r=>Object.fromEntries(p.cols.map((c,i)=>[c,r[i]])));
 
 let MAN=null,DATA=[];const loaded=new Set();
-let st={mode:"day",group:null,side:"up",date:null,from:null,to:null,key:null,dir:1,q:""};
+let st={mode:"day",group:null,side:"up",date:null,from:null,to:null,key:null,dir:1,q:"",theme:""};
 
 const COLS=[
   {k:"date",l:"日期",only:"multi",cls:"nw",f:r=>r.date},
   {k:"group",l:"組別",only:"search",cls:"nw",f:r=>esc(r.group)},
-  {k:"rank",l:"排名",n:1,cls:"c-rank",f:r=>(st.q?(r.side==="up"?"漲":"跌"):"")+r.rank},
+  {k:"rank",l:"排名",n:1,cls:"c-rank",f:r=>(st.q||st.theme?(r.side==="up"?"漲":"跌"):"")+r.rank},
   {k:"ticker",l:"Ticker",cls:"tk",f:r=>esc(r.ticker)},
   {k:"name",l:"公司名稱",cls:"name",f:r=>`<span title="${esc(r.sector)}">${esc(r.name)}</span>`},
+  {k:"cat1",l:"大分類",cls:"nw c-cat",f:r=>r.cat1?`<a href="#" class="cat" data-q="${esc(r.cat1)}">${esc(r.cat1)}</a>`:"—"},
+  {k:"cat2",l:"細分類",cls:"c-cat c-cat2",f:r=>r.cat2?String(r.cat2).split("、").filter(Boolean)
+    .map(x=>`<a href="#" class="cat hot2 chip" data-q="${esc(x)}">${esc(x)}</a>`).join(""):"—"},
   {k:"ret",l:"日內報酬",n:1,cls:"c-ret",f:r=>pct(r.ret)},
   {k:"rel",l:"相對 SPY",n:1,f:r=>pct(r.rel)},
   {k:"vr",l:"量 / 60日均量",n:1,f:r=>r.vr==null?"—":`<span class="${r.vr>=2?"hot":""}">${r.vr.toFixed(2)}x</span>`},
@@ -135,7 +181,9 @@ const COLS=[
   {k:"r6m",l:"6M",n:1,f:r=>pct(r.r6m)},
   {k:"ytd",l:"YTD",n:1,f:r=>pct(r.ytd)},
   {k:"r1y",l:"1Y",n:1,f:r=>pct(r.r1y)},
-  {k:"event",l:"事件",cls:"ev",f:r=>{let e=esc(r.event||"");if(e.startsWith("【財報】"))e=e.slice(4);return (r.earn?'<span class="earn">財報</span>':"")+e}},
+  {k:"event",l:"事件",cls:"ev",f:r=>{let e=esc(r.event||"");if(e.startsWith("【財報】"))e=e.slice(4);
+    const tags=(r.tags?String(r.tags).split(";"):[]).filter(Boolean);if(r.earn&&!tags.includes("財報"))tags.unshift("財報");
+    return tags.map(t=>`<span class="earn">${esc(t)}</span>`).join("")+e}},
   {k:"src",l:"資訊來源",cls:"c-src",f:r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.src||"連結")}</a>`:"—"},
 ];
 
@@ -164,10 +212,21 @@ async function update(){
 }
 
 /* ---------- 篩選與繪製 ---------- */
+function hasTheme(r,t){return (r.cat1===t)||String(r.cat2||"").split("、").includes(t)}
 function rows(){
   let rs;const G=r=>(r.group||MAN.groups[0])===st.group;
+  if(st.theme&&!st.q){
+    const inDate=st.mode==="range"?(r=>r.date>=st.from&&r.date<=st.to):(r=>r.date===st.date);
+    rs=DATA.filter(r=>inDate(r)&&hasTheme(r,st.theme));
+    if(!st.key)rs.sort((a,b)=>b.date.localeCompare(a.date)||b.ret-a.ret);
+    else{const k=st.key;rs.sort((a,b)=>{const x=a[k],y=b[k];if(x==null)return 1;if(y==null)return -1;
+      return (typeof x==="number"?x-y:String(x).localeCompare(String(y)))*st.dir;});}
+    return rs;
+  }
   if(st.q){const q=st.q.toLowerCase();
-    rs=DATA.filter(r=>r.ticker.toLowerCase()===q||String(r.name).toLowerCase().includes(q));
+    rs=DATA.filter(r=>r.ticker.toLowerCase()===q||String(r.name).toLowerCase().includes(q)
+      ||String(r.cat1||"").toLowerCase()===q||String(r.cat2||"").toLowerCase().includes(q));
+    if(st.theme)rs=rs.filter(r=>hasTheme(r,st.theme));
     if(!st.key)rs.sort((a,b)=>b.date.localeCompare(a.date));}
   else if(st.mode==="range"){rs=DATA.filter(r=>r.date>=st.from&&r.date<=st.to&&r.side===st.side&&G(r));
     if(!st.key)rs.sort((a,b)=>b.date.localeCompare(a.date)||a.rank-b.rank);}
@@ -178,7 +237,11 @@ function rows(){
 }
 function render(){
   const multi=st.q||st.mode==="range";
-  const cols=COLS.filter(c=>!c.only||(c.only==="search"&&st.q)||(c.only==="multi"&&multi));
+  const wide=st.q||st.theme;
+  const cols=COLS.filter(c=>!c.only||(c.only==="search"&&wide)||(c.only==="multi"&&multi));
+  $("groups").classList.toggle("dim",!!st.theme);$("up").parentElement.classList.toggle("dim",!!st.theme);
+  $("tchip").innerHTML=st.theme?`<button class="tchip" id="tclear" title="清除細分類篩選">🏷 ${esc(st.theme)} ✕</button>`:"";
+  if(st.theme)$("tclear").onclick=()=>{st.theme="";$("tq").value="";st.key=null;update()};
   $("dayBox").hidden=st.mode!=="day";$("rangeBox").hidden=st.mode!=="range";
   const press=(id,on)=>$(id).setAttribute("aria-pressed",on);
   press("mDay",st.mode==="day");press("mRange",st.mode==="range");press("up",st.side==="up");press("down",st.side==="down");
@@ -190,15 +253,19 @@ function render(){
   $("sortSel").value=st.key?`${st.key}|${st.dir}`:"";
 
   const rs=rows();
+  $("body").onclick=e=>{const a=e.target.closest("a.cat");if(!a)return;e.preventDefault();
+    setTheme(a.dataset.q);window.scrollTo(0,0)};
   $("body").innerHTML=rs.length?rs.map(r=>`<tr>${cols.map(c=>`<td data-l="${c.l}" class="${c.n?"num":""} ${c.cls||""}">${c.f(r)}</td>`).join("")}</tr>`).join("")
     :`<tr><td class="empty" colspan="${cols.length}">${st.q?"找不到符合的紀錄，試試別的代號。":"這個條件沒有資料。"}</td></tr>`;
 
   const any=DATA.find(r=>r.date===st.date);
   const nTk=new Set(rs.map(r=>r.ticker)).size,nD=new Set(rs.map(r=>r.date)).size;
-  $("stat").textContent=st.q?`共 ${rs.length} 筆上榜紀錄`:st.mode==="range"?`${nD} 個交易日、${rs.length} 筆、${nTk} 檔`
+  const nUp=rs.filter(r=>r.side==="up").length;
+  $("stat").textContent=st.theme&&!st.q?`${nD} 個交易日、${nTk} 檔、${rs.length} 筆（漲 ${nUp}／跌 ${rs.length-nUp}）`:st.q?`共 ${rs.length} 筆上榜紀錄`:st.mode==="range"?`${nD} 個交易日、${rs.length} 筆、${nTk} 檔`
     :(any&&any.spy!=null?`當日 SPY ${any.spy>0?"+":""}${(any.spy*100).toFixed(2)}%`:"");
   const sideTxt=st.side==="up"?"漲幅":"跌幅";
-  $("title").textContent=st.q?`搜尋「${st.q}」`:st.mode==="range"?`${st.group}｜${st.from} ～ ${st.to} ${sideTxt}榜`:`${st.group}｜日內${sideTxt}前 ${rs.length} 名`;
+  const period=st.mode==="range"?`${st.from} ～ ${st.to}`:st.date;
+  $("title").textContent=st.q?`搜尋「${st.q}」${st.theme?"＋🏷"+st.theme:""}`:st.theme?`🏷 ${st.theme}｜${period} 上榜股票`:st.mode==="range"?`${st.group}｜${st.from} ～ ${st.to} ${sideTxt}榜`:`${st.group}｜日內${sideTxt}前 ${rs.length} 名`;
   document.title=$("title").textContent+"｜美股重大漲跌";
 }
 function setSort(k,toggle){
@@ -206,11 +273,95 @@ function setSort(k,toggle){
   st.dir=toggle&&st.key===k?-st.dir:(c&&c.n?-1:1);st.key=k;render();
 }
 
+/* ---------- 找細分類：別名、簡體、錯字都能找 ---------- */
+const S2T=Object.fromEntries("块塊 储儲 内內 务務 热熱 网網 计計 络絡 讯訊 导導 体體 电電 机機 设設 备備 圆圓 装裝 测測 软軟 数數 据據 云雲 卫衛 无無 车車 药藥 减減 币幣 矿礦 国國 类類 频頻 硅矽 换換 链鏈 纤纖 组組 统統 显顯 处處 蚀蝕 铀鈾 却卻 变變 压壓 广廣 应應 用用 储儲 盘盤 构構 芯芯 连連 线線 缆纜 发發 厂廠 陆陸 轨軌 飞飛 航航 医醫 疗療 药藥 肥肥 胶膠 锂鋰 池池 储儲 能能 光光 伏伏 业業 务務 资資 讯訊 安安 全全 云雲 端端 边邊 缘緣 库庫 监監 控控 券券 商商 币幣 链鏈 块塊 加加 密密 太太 空空 星星 箭箭 导導 弹彈 军軍 工工 国國 防防 视視 频頻 游遊 戏戲 汽汽 车車 电電 动動 器器 人人 手手 术術"
+  .split(" ").map(p=>[p[0],p[1]]));
+let THEMES=[],ALIASES={};
+const norm=s=>[...String(s||"").toLowerCase().replace(/[\s\-_/·．.、,，]/g,"")].map(c=>S2T[c]||c).join("");
+const bigr=s=>{const a=[];for(let i=0;i<s.length-1;i++)a.push(s.slice(i,i+2));return a.length?a:[s]};
+function dice(a,b){const A=bigr(a),B=bigr(b);let m=0;for(const x of A){const i=B.indexOf(x);if(i>=0){m++;B.splice(i,1)}}return 2*m/(A.length+bigr(b).length)}
+function buildThemes(){
+  const t=MAN.themes||{},c=MAN.cats||{};ALIASES=MAN.aliases||{};
+  if(!Object.keys(t).length){DATA.forEach(r=>String(r.cat2||"").split("、").filter(Boolean).forEach(x=>t[x]=(t[x]||0)+1))}
+  Object.keys(ALIASES).forEach(k=>{if(!(k in t))t[k]=0});
+  THEMES=[...Object.entries(t).map(([name,count])=>({name,count,kind:"細分類"})),
+          ...Object.entries(c).map(([name,count])=>({name,count,kind:"大分類"}))];
+}
+function suggest(q){
+  const nq=norm(q);
+  if(!nq)return [];
+  const out=[];
+  for(const t of THEMES){
+    let best=0,why="";
+    for(const a of [t.name,...(ALIASES[t.name]||[])]){
+      const na=norm(a);if(!na)continue;let sc=0;
+      if(na===nq)sc=100;else if(na.startsWith(nq))sc=85;else if(na.includes(nq))sc=70;
+      else if(nq.includes(na)&&na.length>=2)sc=60;
+      else{const d=dice(na,nq);if(d>=0.5)sc=20+40*d;
+        else if(nq.length>=2&&na.length<=6){const A=new Set(na),c=[...new Set(nq)].filter(x=>A.has(x)).length,ov=c/Math.max(A.size,nq.length);
+          if(ov>=0.6)sc=15+30*ov}}
+      if(sc>best){best=sc;why=a===t.name?"":a}
+    }
+    if(best)out.push({...t,why,sc:best+Math.min(t.count,100)/100});
+  }
+  return out.sort((a,b)=>b.sc-a.sc).slice(0,10);
+}
+let sugIdx=-1,sugList=[];
+function showSug(){
+  const q=$("tq").value.trim(),box=$("tsug");
+  sugList=suggest(q);sugIdx=sugList.length?0:-1;
+  let h="";
+  if(!q){
+    const top=THEMES.filter(t=>t.kind==="細分類").slice(0,18);
+    h=`<div class="hd">熱門細分類（上榜次數）</div><div class="chips">${top.map(t=>`<button data-t="${esc(t.name)}">${esc(t.name)} <small>${t.count}</small></button>`).join("")}</div>`
+     +`<div class="hd">大分類</div><div class="chips">${THEMES.filter(t=>t.kind==="大分類").map(t=>`<button data-t="${esc(t.name)}">${esc(t.name)}</button>`).join("")}</div>`;
+  }else if(sugList.length){
+    h=sugList.map((t,i)=>`<div class="it" role="option" data-t="${esc(t.name)}" aria-selected="${i===sugIdx}">
+      <span>${esc(t.name)}${t.why?`<span class="why">← ${esc(t.why)}</span>`:""}</span><small>${t.kind}・${t.count} 筆</small></div>`).join("");
+  }else{
+    h=`<div class="hd">找不到「${esc(q)}」。可以在 themes.py 的 ALIASES 加上這個叫法。</div>`;
+  }
+  box.innerHTML=h;box.hidden=false;$("tq").setAttribute("aria-expanded","true");
+}
+function hideSug(){$("tsug").hidden=true;$("tq").setAttribute("aria-expanded","false")}
+function setTheme(t){st.theme=t;$("tq").value="";hideSug();st.key=null;update()}
+function moveSug(d){
+  if(!sugList.length)return;sugIdx=(sugIdx+d+sugList.length)%sugList.length;
+  $("tsug").querySelectorAll(".it").forEach((el,i)=>el.setAttribute("aria-selected",i===sugIdx));
+}
+
+/* ---------- 產生給 AI 的指令 ---------- */
+function aiPrompt(rs){
+  const lines=rs.map(r=>`${r.date},${r.ticker},${String(r.name).replace(/,/g," ")},${r.ret>0?"+":""}${(r.ret*100).toFixed(2)}%${r.tags?","+String(r.tags).replace(/;/g,"/"):(r.earn?",財報":"")}`);
+  return `請上網搜尋以下美股在指定日期（美東時間）單日大漲或大跌的主要原因。
+
+要求：
+1. 每檔用繁體中文 80～120 字說明原因，保留關鍵數字（例如 EPS 與營收和市場預期的比較、財測、目標價調整、併購金額）。
+2. 只寫有新聞來源支持的內容，不要推測；找不到與這次股價變動相關的個股消息，就寫「查無明確個股消息」，可再補一句當天可能的產業或大盤因素。
+3. 只輸出一個 CSV 程式碼區塊，第一行是標題 date,ticker,event,src,url，之後每檔一行，順序與清單相同。
+4. event 欄內不要出現半形逗號（用全形「，」）；src 是媒體名稱；url 是該則新聞網址，找不到就留空。
+
+清單（date,ticker,公司,漲跌幅,SEC/財報標籤）：
+${lines.join("\n")}`;
+}
+function openAi(){
+  const rs=rows();
+  if(!rs.length){alert("目前表格沒有資料");return}
+  $("aiText").value=aiPrompt(rs);$("aiMsg").textContent=`共 ${rs.length} 檔`;
+  $("aiDlg").showModal();$("aiText").focus();$("aiText").select();
+}
+async function copyAi(){
+  const t=$("aiText");
+  try{await navigator.clipboard.writeText(t.value);$("aiMsg").textContent="已複製 ✓"}
+  catch(e){t.select();document.execCommand("copy");$("aiMsg").textContent="已複製 ✓（若沒成功請手動全選複製）"}
+}
+
 /* ---------- 網址保存狀態，方便分享或加書籤 ---------- */
 function saveHash(){
   const p=new URLSearchParams({g:st.group,s:st.side});
   if(st.mode==="range"){p.set("from",st.from);p.set("to",st.to)}else p.set("d",st.date);
   if(st.q)p.set("q",st.q);
+  if(st.theme)p.set("th",st.theme);
   history.replaceState(null,"","#"+p.toString());
 }
 function loadHash(){
@@ -220,6 +371,7 @@ function loadHash(){
   if(p.get("from")&&p.get("to")){st.mode="range";st.from=p.get("from");st.to=p.get("to")}
   if(MAN.dates.includes(p.get("d")))st.date=p.get("d");
   if(p.get("q")){st.q=p.get("q");$("q").value=st.q}
+  if(p.get("th"))st.theme=p.get("th");
 }
 
 /* ---------- 啟動 ---------- */
@@ -250,6 +402,13 @@ async function init(){
   $("rangeBox").querySelectorAll("button[data-p]").forEach(b=>b.onclick=reset(()=>{st.to=MAN.dates[0];st.from=shift(MAN.dates[0],+b.dataset.p)}));
   $("sortSel").onchange=e=>{const v=e.target.value;if(!v){st.key=null;render();return}const[k,d]=v.split("|");st.key=k;st.dir=+d;render()};
   let tmr;$("q").oninput=e=>{clearTimeout(tmr);tmr=setTimeout(reset(()=>st.q=e.target.value.trim()),250)};
+  buildThemes();
+  $("tq").onfocus=showSug;$("tq").oninput=showSug;
+  $("tq").onkeydown=e=>{if(e.key==="ArrowDown"){e.preventDefault();moveSug(1)}else if(e.key==="ArrowUp"){e.preventDefault();moveSug(-1)}
+    else if(e.key==="Enter"){e.preventDefault();if(sugList[sugIdx])setTheme(sugList[sugIdx].name)}else if(e.key==="Escape")hideSug()};
+  $("tsug").onmousedown=e=>{const el=e.target.closest("[data-t]");if(el){e.preventDefault();setTheme(el.dataset.t)}};
+  document.addEventListener("click",e=>{if(!e.target.closest(".tbox"))hideSug()});
+  $("aiBtn").onclick=openAi;$("aiCopy").onclick=copyAi;$("aiClose").onclick=()=>$("aiDlg").close();
   update();
 }
 init().catch(e=>{$("body").innerHTML=`<tr><td class="empty">載入失敗（${esc(e.message)}）。若是直接雙擊 site/index.html，瀏覽器會擋讀取，請改開 dashboard.html 或部署到 Pages。</td></tr>`});
