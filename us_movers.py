@@ -975,6 +975,18 @@ def main():
         if last == today and now_ny.hour * 60 + now_ny.minute < 16 * 60 + 30:
             last = idx[-2]  # 今天還沒收盤，用前一個交易日
         days = [last]
+        # 自動補漏：如果之前有排程沒跑到，把歷史最後一天之後漏掉的交易日一起補上（最多 10 天）
+        if hist_path.exists():
+            try:
+                done = pd.read_csv(hist_path, usecols=["date"], dtype=str)["date"]
+                last_done = pd.Timestamp(done.max()) if len(done) else None
+            except Exception:
+                last_done = None
+            if last_done is not None:
+                gap = [d for d in idx if last_done < d < last][-10:]
+                if gap:
+                    log(f"發現漏掉的交易日 {len(gap)} 天：{', '.join(f'{d:%m/%d}' for d in gap)}，一起補上")
+                days = gap + days
     else:
         days = list(idx[(idx >= start) & (idx <= end)])
     if not days:
