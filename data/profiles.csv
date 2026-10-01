@@ -1,0 +1,401 @@
+﻿ticker,yf_sector,yf_industry,kw_theme,fetched
+A,Healthcare,Diagnostics & Research,,2026-10-01
+AA,Basic Materials,Aluminum,,2026-10-01
+AADX,Industrials,Aerospace & Defense,太空/衛星,2026-10-01
+AAL,Industrials,Airlines,,2026-10-01
+AAMI,Financial Services,Asset Management,,2026-10-01
+AAOI,Technology,Communication Equipment,光通訊,2026-10-01
+AAON,Industrials,Building Products & Equipment,,2026-10-01
+AAP,Consumer Cyclical,Auto Parts,儲能/電池,2026-10-01
+AAPG,Healthcare,Biotechnology,,2026-10-01
+AAPL,Technology,Consumer Electronics,,2026-10-01
+AAUC,Basic Materials,Gold,,2026-10-01
+AB,Financial Services,Asset Management,,2026-10-01
+ABBV,Healthcare,Drug Manufacturers - General,,2026-10-01
+ABCL,Healthcare,Biotechnology,,2026-10-01
+ABG,Consumer Cyclical,Auto & Truck Dealerships,,2026-10-01
+ABM,Industrials,Specialty Business Services,資料中心,2026-10-01
+ABNB,Consumer Cyclical,Travel Services,,2026-10-01
+ABT,Healthcare,Medical Devices,,2026-10-01
+ABVX,Healthcare,Biotechnology,,2026-10-01
+ACA,Industrials,Engineering & Construction,,2026-10-01
+ACAD,Healthcare,Biotechnology,,2026-10-01
+ACGL,Financial Services,Insurance - Diversified,,2026-10-01
+ACHC,Healthcare,Medical Care Facilities,,2026-10-01
+ACHR,Industrials,Aerospace & Defense,,2026-10-01
+ACI,Consumer Defensive,Grocery Stores,,2026-10-01
+ACIW,Technology,Software - Infrastructure,,2026-10-01
+ACLS,Technology,Semiconductor Equipment & Materials,,2026-10-01
+ACM,Industrials,Engineering & Construction,,2026-10-01
+ACMR,Technology,Semiconductor Equipment & Materials,,2026-10-01
+ACN,Technology,Information Technology Services,機器人,2026-10-01
+ACT,Financial Services,Insurance - Specialty,,2026-10-01
+AD,Communication Services,Telecom Services,,2026-10-01
+ADBE,Technology,Software - Application,AI,2026-10-01
+ADEA,Technology,Software - Application,,2026-10-01
+ADI,Technology,Semiconductors,,2026-10-01
+ADM,Consumer Defensive,Farm Products,,2026-10-01
+ADMA,Healthcare,Biotechnology,,2026-10-01
+ADP,Technology,Software - Application,,2026-10-01
+ADPT,Healthcare,Diagnostics & Research,,2026-10-01
+ADSK,Technology,Software - Application,,2026-10-01
+ADT,Industrials,Security & Protection Services,,2026-10-01
+AEG,Financial Services,Insurance - Diversified,,2026-10-01
+AEHR,Technology,Semiconductor Equipment & Materials,光通訊,2026-10-01
+AEIS,Industrials,Electrical Equipment & Parts,資料中心,2026-10-01
+AEM,Basic Materials,Gold,,2026-10-01
+AEO,Consumer Cyclical,Apparel Retail,,2026-10-01
+AEP,Utilities,Utilities - Regulated Electric,核能,2026-10-01
+AER,Industrials,Rental & Leasing Services,,2026-10-01
+AERO,Industrials,Airlines,,2026-10-01
+AES,Utilities,Utilities - Diversified,,2026-10-01
+AESI,Energy,Oil & Gas Equipment & Services,,2026-10-01
+AEVA,Technology,Software - Infrastructure,AI,2026-10-01
+AFRM,Financial Services,Credit Services,,2026-10-01
+AG,Basic Materials,Silver,,2026-10-01
+AGCO,Industrials,Farm & Heavy Construction Machinery,,2026-10-01
+AGI,Basic Materials,Gold,,2026-10-01
+AGIO,Healthcare,Biotechnology,,2026-10-01
+AGL,Healthcare,Medical Care Facilities,,2026-10-01
+AGO,Financial Services,Insurance - Specialty,,2026-10-01
+AGRO,Consumer Defensive,Farm Products,,2026-10-01
+AGX,Industrials,Engineering & Construction,,2026-10-01
+AGYS,Technology,Software - Application,,2026-10-01
+AHR,Real Estate,REIT - Healthcare Facilities,,2026-10-01
+AIG,Financial Services,Insurance - Diversified,,2026-10-01
+AIIR,Consumer Defensive,Tobacco,,2026-10-01
+AIP,Technology,Semiconductors,,2026-10-01
+AIR,Industrials,Aerospace & Defense,,2026-10-01
+AIT,Industrials,Industrial Distribution,機器人,2026-10-01
+AIZ,Financial Services,Insurance - Property & Casualty,,2026-10-01
+AJG,Financial Services,Insurance Brokers,,2026-10-01
+AKAM,Technology,Software - Infrastructure,AI,2026-10-01
+ALAB,Technology,Semiconductors,AI,2026-10-01
+ALB,Basic Materials,Specialty Chemicals,,2026-10-01
+ALC,Healthcare,Medical Instruments & Supplies,,2026-10-01
+ALG,Industrials,Farm & Heavy Construction Machinery,,2026-10-01
+ALGM,Technology,Semiconductors,AI,2026-10-01
+ALGN,Healthcare,Medical Instruments & Supplies,,2026-10-01
+ALGT,Industrials,Airlines,,2026-10-01
+ALH,Consumer Cyclical,"Furnishings, Fixtures & Appliances",,2026-10-01
+ALHC,Healthcare,Healthcare Plans,,2026-10-01
+ALK,Industrials,Airlines,,2026-10-01
+ALKS,Healthcare,Drug Manufacturers - Specialty & Generic,,2026-10-01
+ALKT,Technology,Software - Application,,2026-10-01
+ALL,Financial Services,Insurance - Property & Casualty,,2026-10-01
+ALLE,Industrials,Security & Protection Services,,2026-10-01
+ALLY,Financial Services,Credit Services,,2026-10-01
+ALM,Basic Materials,Other Industrial Metals & Mining,,2026-10-01
+ALMR,Healthcare,Medical Devices,,2026-10-01
+ALMS,Healthcare,Biotechnology,,2026-10-01
+ALNY,Healthcare,Biotechnology,GLP-1/減重,2026-10-01
+ALRM,Technology,Software - Application,AI,2026-10-01
+ALVO,Healthcare,Drug Manufacturers - Specialty & Generic,,2026-10-01
+AMAT,Technology,Semiconductor Equipment & Materials,,2026-10-01
+AMBA,Technology,Semiconductor Equipment & Materials,AI,2026-10-01
+AMBP,Consumer Cyclical,Packaging & Containers,,2026-10-01
+AMBQ,Technology,Semiconductors,AI,2026-10-01
+AMCR,Consumer Cyclical,Packaging & Containers,,2026-10-01
+AMD,Technology,Semiconductors,記憶體,2026-10-01
+AMG,Financial Services,Asset Management,,2026-10-01
+AMGN,Healthcare,Drug Manufacturers - General,,2026-10-01
+AMH,Real Estate,REIT - Residential,,2026-10-01
+AMKR,Technology,Semiconductor Equipment & Materials,記憶體、光通訊,2026-10-01
+AMLX,Healthcare,Drug Manufacturers - Specialty & Generic,GLP-1/減重,2026-10-01
+AMP,Financial Services,Asset Management,,2026-10-01
+AMPX,Industrials,Electrical Equipment & Parts,太空/衛星、無人機/國防科技、儲能/電池,2026-10-01
+AMR,Basic Materials,Coking Coal,,2026-10-01
+AMRX,Healthcare,Drug Manufacturers - Specialty & Generic,,2026-10-01
+AMRZ,Basic Materials,Building Materials,,2026-10-01
+AMSC,Industrials,Specialty Industrial Machinery,太陽能,2026-10-01
+AMT,Real Estate,REIT - Specialty,資料中心,2026-10-01
+AMTM,Industrials,Specialty Business Services,核能,2026-10-01
+AMX,Communication Services,Telecom Services,太空/衛星,2026-10-01
+AMZN,Consumer Cyclical,Internet Retail,,2026-10-01
+AN,Consumer Cyclical,Auto & Truck Dealerships,,2026-10-01
+ANAB,Healthcare,Biotechnology,,2026-10-01
+ANDE,Consumer Defensive,Food Distribution,,2026-10-01
+ANDG,Consumer Cyclical,Personal Services,,2026-10-01
+ANET,Technology,Computer Hardware,資料中心、AI,2026-10-01
+ANF,Consumer Cyclical,Apparel Retail,,2026-10-01
+AON,Financial Services,Insurance Brokers,,2026-10-01
+AOS,Industrials,Specialty Industrial Machinery,太陽能,2026-10-01
+APA,Energy,Oil & Gas E&P,,2026-10-01
+APAM,Financial Services,Asset Management,,2026-10-01
+APD,Basic Materials,Specialty Chemicals,,2026-10-01
+APG,Industrials,Engineering & Construction,,2026-10-01
+APH,Technology,Electronic Components,,2026-10-01
+APLD,Technology,Information Technology Services,資料中心、AI,2026-10-01
+APO,Financial Services,Asset Management,,2026-10-01
+APP,Communication Services,Advertising Agencies,,2026-10-01
+APPF,Technology,Software - Application,,2026-10-01
+APPN,Technology,Software - Infrastructure,AI,2026-10-01
+APTV,Consumer Cyclical,Auto Parts,,2026-10-01
+AQN,Utilities,Utilities - Diversified,,2026-10-01
+AR,Energy,Oil & Gas E&P,,2026-10-01
+ARCB,Industrials,Trucking,,2026-10-01
+ARE,Real Estate,REIT - Office,,2026-10-01
+ARES,Financial Services,Asset Management,,2026-10-01
+ARGX,Healthcare,Biotechnology,,2026-10-01
+ARIS,Basic Materials,Gold,,2026-10-01
+ARM,Technology,Semiconductors,,2026-10-01
+ARMK,Industrials,Specialty Business Services,,2026-10-01
+AROC,Energy,Oil & Gas Equipment & Services,,2026-10-01
+ARQT,Healthcare,Biotechnology,,2026-10-01
+ARW,Technology,Electronics & Computer Distribution,,2026-10-01
+ARWR,Healthcare,Biotechnology,,2026-10-01
+ARX,Financial Services,Insurance Brokers,,2026-10-01
+ARXS,Industrials,Aerospace & Defense,太空/衛星,2026-10-01
+AS,Consumer Cyclical,Leisure,,2026-10-01
+ASAN,Technology,Software - Application,AI,2026-10-01
+ASH,Basic Materials,Specialty Chemicals,,2026-10-01
+ASML,Technology,Semiconductor Equipment & Materials,,2026-10-01
+ASND,Healthcare,Biotechnology,,2026-10-01
+ASO,Consumer Cyclical,Specialty Retail,,2026-10-01
+ASST,Financial Services,Asset Management,,2026-10-01
+ASTH,Healthcare,Medical Care Facilities,,2026-10-01
+ASTS,Technology,Communication Equipment,太空/衛星,2026-10-01
+ASX,Technology,Semiconductors,,2026-10-01
+ATAT,Consumer Cyclical,Lodging,,2026-10-01
+ATEC,Healthcare,Medical Devices,機器人,2026-10-01
+ATEN,Technology,Software - Infrastructure,,2026-10-01
+ATEX,Communication Services,Telecom Services,,2026-10-01
+ATHM,Communication Services,Internet Content & Information,,2026-10-01
+ATI,Industrials,Metal Fabrication,,2026-10-01
+ATKR,Industrials,Electrical Equipment & Parts,資料中心,2026-10-01
+ATMU,Consumer Cyclical,Auto Parts,,2026-10-01
+ATRC,Healthcare,Medical Instruments & Supplies,,2026-10-01
+ATRO,Industrials,Aerospace & Defense,,2026-10-01
+ATS,Industrials,Specialty Industrial Machinery,核能,2026-10-01
+AU,Basic Materials,Gold,,2026-10-01
+AUGO,Basic Materials,Gold,,2026-10-01
+AUPH,Healthcare,Biotechnology,,2026-10-01
+AUR,Consumer Cyclical,Auto Parts,,2026-10-01
+AVAH,Healthcare,Medical Care Facilities,,2026-10-01
+AVAL,Financial Services,Banks - Regional,,2026-10-01
+AVAV,Industrials,Aerospace & Defense,太空/衛星、無人機/國防科技,2026-10-01
+AVEX,Industrials,Aerospace & Defense,無人機/國防科技,2026-10-01
+AVGO,Technology,Semiconductors,AI,2026-10-01
+AVNT,Basic Materials,Specialty Chemicals,,2026-10-01
+AVPT,Technology,Software - Infrastructure,AI,2026-10-01
+AVT,Technology,Electronics & Computer Distribution,,2026-10-01
+AVTR,Healthcare,Medical Instruments & Supplies,,2026-10-01
+AWI,Industrials,Building Products & Equipment,,2026-10-01
+AWK,Utilities,Utilities - Regulated Water,,2026-10-01
+AWR,Utilities,Utilities - Regulated Water,,2026-10-01
+AX,Financial Services,Banks - Regional,,2026-10-01
+AXGN,Healthcare,Medical Devices,,2026-10-01
+AXON,Industrials,Aerospace & Defense,無人機/國防科技,2026-10-01
+AXP,Financial Services,Credit Services,,2026-10-01
+AXS,Financial Services,Insurance - Specialty,,2026-10-01
+AXSM,Healthcare,Biotechnology,,2026-10-01
+AXTI,Technology,Semiconductor Equipment & Materials,光通訊、太陽能,2026-10-01
+AYA,Basic Materials,Silver,,2026-10-01
+AYI,Industrials,Electrical Equipment & Parts,,2026-10-01
+AZN,Healthcare,Drug Manufacturers - General,,2026-10-01
+AZO,Consumer Cyclical,Auto Parts,,2026-10-01
+AZZ,Industrials,Specialty Business Services,,2026-10-01
+B,Basic Materials,Gold,,2026-10-01
+BA,Industrials,Aerospace & Defense,太空/衛星、無人機/國防科技,2026-10-01
+BABA,Consumer Cyclical,Internet Retail,,2026-10-01
+BAH,Industrials,Consulting Services,量子運算,2026-10-01
+BALL,Consumer Cyclical,Packaging & Containers,,2026-10-01
+BAM,Financial Services,Asset Management,,2026-10-01
+BANC,Financial Services,Banks - Regional,,2026-10-01
+BAND,Technology,Software - Infrastructure,AI,2026-10-01
+BANF,Financial Services,Banks - Regional,,2026-10-01
+BANR,Financial Services,Banks - Regional,,2026-10-01
+BAP,Financial Services,Banks - Regional,,2026-10-01
+BAX,Healthcare,Medical Instruments & Supplies,,2026-10-01
+BB,Technology,Software - Infrastructure,,2026-10-01
+BBAI,Technology,Information Technology Services,資安,2026-10-01
+BBAR,Financial Services,Banks - Regional,,2026-10-01
+BBIO,Healthcare,Biotechnology,,2026-10-01
+BBT,Financial Services,Banks - Regional,,2026-10-01
+BBUC,Industrials,Conglomerates,,2026-10-01
+BBVA,Financial Services,Banks - Diversified,,2026-10-01
+BBWI,Consumer Cyclical,Specialty Retail,,2026-10-01
+BBY,Consumer Cyclical,Specialty Retail,,2026-10-01
+BC,Consumer Cyclical,Recreational Vehicles,,2026-10-01
+BCC,Basic Materials,Lumber & Wood Production,,2026-10-01
+BCE,Communication Services,Telecom Services,太空/衛星,2026-10-01
+BCH,Financial Services,Banks - Regional,,2026-10-01
+BCO,Industrials,Security & Protection Services,,2026-10-01
+BCPC,Basic Materials,Specialty Chemicals,,2026-10-01
+BCRX,Healthcare,Drug Manufacturers - Specialty & Generic,,2026-10-01
+BDC,Technology,Communication Equipment,資料中心,2026-10-01
+BDX,Healthcare,Medical Instruments & Supplies,,2026-10-01
+BE,Industrials,Electrical Equipment & Parts,資料中心,2026-10-01
+BEAM,Healthcare,Biotechnology,,2026-10-01
+BEKE,Real Estate,Real Estate Services,,2026-10-01
+BELFA,Technology,Electronic Components,,2026-10-01
+BELFB,Technology,Electronic Components,,2026-10-01
+BEN,Financial Services,Asset Management,,2026-10-01
+BEP,Utilities,Utilities - Renewable,核能,2026-10-01
+BEPC,Utilities,Utilities - Renewable,,2026-10-01
+BEPI,,,,2026-10-01
+BEPJ,,,,2026-10-01
+BETA,Industrials,Aerospace & Defense,,2026-10-01
+BFAM,Consumer Cyclical,Personal Services,,2026-10-01
+BFH,Financial Services,Credit Services,,2026-10-01
+BFLY,Healthcare,Medical Devices,,2026-10-01
+BG,Consumer Defensive,Farm Products,,2026-10-01
+BGC,Financial Services,Capital Markets,,2026-10-01
+BGR,Financial Services,Asset Management,,2026-10-01
+BGSI,Consumer Cyclical,Auto & Truck Dealerships,,2026-10-01
+BHC,Healthcare,Drug Manufacturers - Specialty & Generic,,2026-10-01
+BHE,Technology,Electronic Components,,2026-10-01
+BHP,Basic Materials,Other Industrial Metals & Mining,,2026-10-01
+BHVN,Healthcare,Biotechnology,GLP-1/減重,2026-10-01
+BIDU,Communication Services,Internet Content & Information,,2026-10-01
+BIIB,Healthcare,Drug Manufacturers - General,,2026-10-01
+BILI,Communication Services,Internet Content & Information,,2026-10-01
+BILL,Technology,Software - Application,AI,2026-10-01
+BIO,Healthcare,Medical Devices,,2026-10-01
+BIP,Utilities,Utilities - Diversified,,2026-10-01
+BIPC,Utilities,Utilities - Regulated Gas,,2026-10-01
+BIPH,,,,2026-10-01
+BIRK,Consumer Cyclical,Footwear & Accessories,,2026-10-01
+BJ,Consumer Defensive,Discount Stores,,2026-10-01
+BKD,Healthcare,Medical Care Facilities,,2026-10-01
+BKE,Consumer Cyclical,Apparel Retail,,2026-10-01
+BKH,Utilities,Utilities - Regulated Gas,,2026-10-01
+BKNG,Consumer Cyclical,Travel Services,,2026-10-01
+BKR,Energy,Oil & Gas Equipment & Services,,2026-10-01
+BKU,Financial Services,Banks - Regional,,2026-10-01
+BKV,Energy,Oil & Gas E&P,,2026-10-01
+BL,Technology,Software - Application,,2026-10-01
+BLBD,Industrials,Farm & Heavy Construction Machinery,,2026-10-01
+BLDR,Industrials,Building Products & Equipment,,2026-10-01
+BLK,Financial Services,Asset Management,,2026-10-01
+BLKB,Technology,Software - Application,AI,2026-10-01
+BLLN,Healthcare,Diagnostics & Research,,2026-10-01
+BLSH,Technology,Software - Infrastructure,比特幣/加密,2026-10-01
+BLTE,Healthcare,Biotechnology,,2026-10-01
+BMA,Financial Services,Banks - Regional,,2026-10-01
+BMI,Technology,Scientific & Technical Instruments,,2026-10-01
+BMNR,Financial Services,Capital Markets,比特幣/加密,2026-10-01
+BMRN,Healthcare,Biotechnology,,2026-10-01
+BMY,Healthcare,Drug Manufacturers - General,,2026-10-01
+BNS,Financial Services,Banks - Diversified,,2026-10-01
+BNTX,Healthcare,Biotechnology,,2026-10-01
+BNY,Financial Services,Banks - Diversified,,2026-10-01
+BOBS,Consumer Cyclical,Specialty Retail,,2026-10-01
+BOH,Financial Services,Banks - Regional,,2026-10-01
+BOOT,Consumer Cyclical,Apparel Retail,,2026-10-01
+BOX,Technology,Software - Infrastructure,,2026-10-01
+BP,Energy,Oil & Gas Integrated,太陽能,2026-10-01
+BPYPM,,,,2026-10-01
+BPYPN,Real Estate,Real Estate Services,,2026-10-01
+BPYPO,Real Estate,Real Estate Services,,2026-10-01
+BPYPP,Real Estate,Real Estate Services,,2026-10-01
+BR,Technology,Information Technology Services,,2026-10-01
+BRAI,Technology,Computer Hardware,AI,2026-10-01
+BRBR,Consumer Defensive,Packaged Foods,,2026-10-01
+BRC,Industrials,Security & Protection Services,,2026-10-01
+BRK-A,Financial Services,Insurance - Diversified,,2026-10-01
+BRK-B,Financial Services,Insurance - Diversified,,2026-10-01
+BRKR,Healthcare,Medical Devices,,2026-10-01
+BRKRP,Healthcare,Medical Devices,,2026-10-01
+BRO,Financial Services,Insurance Brokers,,2026-10-01
+BROS,Consumer Cyclical,Restaurants,,2026-10-01
+BRSL,Consumer Cyclical,Gambling,,2026-10-01
+BRUN,Technology,Software - Infrastructure,AI,2026-10-01
+BRVE,Healthcare,Biotechnology,,2026-10-01
+BRZE,Technology,Software - Application,AI,2026-10-01
+BSBR,Financial Services,Banks - Regional,,2026-10-01
+BSP,Technology,Software - Application,,2026-10-01
+BSX,Healthcare,Medical Devices,,2026-10-01
+BSY,Technology,Software - Application,,2026-10-01
+BTDR,Technology,Software - Application,比特幣/加密,2026-10-01
+BTG,Basic Materials,Gold,,2026-10-01
+BTI,Consumer Defensive,Tobacco,,2026-10-01
+BTSG,Healthcare,Health Information Services,,2026-10-01
+BTSGU,Healthcare,Health Information Services,,2026-10-01
+BTU,Energy,Thermal Coal,,2026-10-01
+BUD,Consumer Defensive,Beverages - Brewers,,2026-10-01
+BULL,Technology,Software - Application,,2026-10-01
+BURL,Consumer Cyclical,Apparel Retail,,2026-10-01
+BVC,Technology,Software - Application,,2026-10-01
+BVN,Basic Materials,Other Precious Metals & Mining,,2026-10-01
+BW,Industrials,Specialty Industrial Machinery,,2026-10-01
+BWA,Consumer Cyclical,Auto Parts,儲能/電池,2026-10-01
+BWIN,Financial Services,Insurance Brokers,,2026-10-01
+BWLP,Energy,Oil & Gas Midstream,,2026-10-01
+BWXT,Industrials,Aerospace & Defense,,2026-10-01
+BX,Financial Services,Asset Management,,2026-10-01
+BXBL,Consumer Cyclical,Residential Construction,,2026-10-01
+BXMT,Real Estate,REIT - Mortgage,,2026-10-01
+BXP,Real Estate,REIT - Office,,2026-10-01
+BZ,Communication Services,Internet Content & Information,,2026-10-01
+C,Financial Services,Banks - Diversified,,2026-10-01
+CAAP,Industrials,Airports & Air Services,,2026-10-01
+CACC,Financial Services,Credit Services,,2026-10-01
+CACI,Technology,Information Technology Services,,2026-10-01
+CAE,Industrials,Aerospace & Defense,,2026-10-01
+CAG,Consumer Defensive,Packaged Foods,,2026-10-01
+CAH,Healthcare,Medical Distribution,,2026-10-01
+CAI,Healthcare,Biotechnology,,2026-10-01
+CAKE,Consumer Cyclical,Restaurants,,2026-10-01
+CALM,Consumer Defensive,Farm Products,,2026-10-01
+CALX,Technology,Software - Infrastructure,,2026-10-01
+CALY,Consumer Cyclical,Leisure,,2026-10-01
+CAMT,Technology,Semiconductor Equipment & Materials,,2026-10-01
+CAR,Industrials,Rental & Leasing Services,,2026-10-01
+CARG,Communication Services,Internet Content & Information,,2026-10-01
+CARR,Industrials,Building Products & Equipment,,2026-10-01
+CART,Consumer Cyclical,Internet Retail,,2026-10-01
+CASY,Consumer Cyclical,Specialty Retail,,2026-10-01
+CAT,Industrials,Farm & Heavy Construction Machinery,,2026-10-01
+CAVA,Consumer Cyclical,Restaurants,,2026-10-01
+CB,Financial Services,Insurance - Property & Casualty,,2026-10-01
+CBOE,Financial Services,Financial Data & Stock Exchanges,,2026-10-01
+CBRE,Real Estate,Real Estate Services,,2026-10-01
+CBRS,Technology,Semiconductors,AI,2026-10-01
+CBT,Basic Materials,Specialty Chemicals,,2026-10-01
+CBZ,Industrials,Specialty Business Services,,2026-10-01
+CC,Basic Materials,Specialty Chemicals,,2026-10-01
+CCC,Technology,Software - Application,AI,2026-10-01
+CCEP,Consumer Defensive,Beverages - Non-Alcoholic,,2026-10-01
+CCI,Real Estate,REIT - Specialty,,2026-10-01
+CCJ,Energy,Uranium,核能,2026-10-01
+CCK,Consumer Cyclical,Packaging & Containers,,2026-10-01
+CCL,Consumer Cyclical,Travel Services,,2026-10-01
+CCZ,,,,2026-10-01
+CDE,Basic Materials,Gold,,2026-10-01
+CDLR,Industrials,Engineering & Construction,,2026-10-01
+CDNA,Healthcare,Diagnostics & Research,,2026-10-01
+CDNL,Industrials,Engineering & Construction,,2026-10-01
+CDNS,Technology,Software - Application,AI,2026-10-01
+CDW,Technology,Information Technology Services,,2026-10-01
+CE,Basic Materials,Chemicals,,2026-10-01
+CECO,Industrials,Pollution & Treatment Controls,,2026-10-01
+CEG,Utilities,Utilities - Independent Power Producers,核能,2026-10-01
+CELC,Healthcare,Biotechnology,,2026-10-01
+CELH,Consumer Defensive,Beverages - Non-Alcoholic,,2026-10-01
+CENT,Consumer Defensive,Packaged Foods,,2026-10-01
+CENTA,Consumer Defensive,Packaged Foods,,2026-10-01
+CENX,Basic Materials,Aluminum,,2026-10-01
+CEPU,Utilities,Utilities - Regulated Electric,,2026-10-01
+CF,Basic Materials,Agricultural Inputs,,2026-10-01
+CFG,Financial Services,Banks - Regional,,2026-10-01
+CG,Financial Services,Asset Management,,2026-10-01
+CGAU,Basic Materials,Gold,,2026-10-01
+CGNX,Technology,Scientific & Technical Instruments,AI,2026-10-01
+CGON,Healthcare,Biotechnology,,2026-10-01
+CHA,Consumer Cyclical,Restaurants,,2026-10-01
+CHD,Consumer Defensive,Household & Personal Products,,2026-10-01
+CHDN,Consumer Cyclical,Gambling,,2026-10-01
+CHE,Healthcare,Medical Care Facilities,,2026-10-01
+CHEF,Consumer Defensive,Food Distribution,,2026-10-01
+CHH,Consumer Cyclical,Lodging,,2026-10-01
+CHKP,Technology,Software - Infrastructure,AI,2026-10-01
+CHRD,Energy,Oil & Gas E&P,,2026-10-01
+CHRN,Technology,Information Technology Services,AI,2026-10-01
+CHRW,Industrials,Integrated Freight & Logistics,,2026-10-01
+CHT,Communication Services,Telecom Services,太空/衛星,2026-10-01
+CHTR,Communication Services,Telecom Services,,2026-10-01
+CHTRP,,,,2026-10-01
+CHWY,Consumer Cyclical,Internet Retail,,2026-10-01
+CHYM,Technology,Software - Application,,2026-10-01
+CIB,Financial Services,Banks - Regional,,2026-10-01
