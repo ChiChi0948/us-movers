@@ -54,10 +54,21 @@ jobs:
         run: |
           git config user.name "movers-bot"
           git config user.email "movers-bot@users.noreply.github.com"
-          git add data
-          git commit -m "movers $(date -u +%F)" || echo "no changes"
-          git pull --rebase || true
-          git push
+          git add -A data
+          git commit -m "movers $(date -u +%F)" || { echo "no changes"; exit 0; }
+          for i in 1 2 3; do
+            git push && exit 0
+            echo "遠端在這段期間有新提交（例如另一次執行或你在網頁上改了檔案），合併後重試 $i/3"
+            rm -rf /tmp/ours && mkdir -p /tmp/ours
+            cp data/movers_history.csv data/last_run.json /tmp/ours/
+            cp data/profiles.csv /tmp/ours/ 2>/dev/null || true
+            git fetch origin main
+            git reset --hard origin/main
+            python us_movers.py --merge-from /tmp/ours
+            git add -A data
+            git commit -m "movers $(date -u +%F) (merged)" || true
+          done
+          exit 1
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
