@@ -871,6 +871,29 @@ def build_outputs(hist: pd.DataFrame, out_dir: Path, site_dir: Path, group_order
     (site_dir / ".nojekyll").write_text("", encoding="utf-8")
 
 
+def merge_from(args):
+    """遠端在這次執行期間有新提交時使用：以遠端資料為底，只換上這次重算的那些日期。"""
+    src = Path(args.merge_from)
+    out_dir = Path(args.out_dir); data_dir = out_dir / "data"
+    hist_path = data_dir / "movers_history.csv"
+    dates = json.loads((src / "last_run.json").read_text(encoding="utf-8"))["dates"]
+    ours = load_history(src / "movers_history.csv")
+    remote = load_history(hist_path)
+    hist = pd.concat([remote[~remote["date"].isin(dates)], ours[ours["date"].isin(dates)]], ignore_index=True)
+    hist = hist.sort_values(["date", "group", "side", "rank"], ascending=[False, False, False, True])[HIST_COLS]
+    # 公司產業資料：兩邊聯集
+    if (src / "profiles.csv").exists():
+        prof = pd.concat([load_profiles(data_dir / "profiles.csv"), load_profiles(src / "profiles.csv")])
+        prof.drop_duplicates("ticker", keep="first").to_csv(data_dir / "profiles.csv", index=False, encoding="utf-8-sig")
+    hist = apply_manual_events(hist, data_dir / "events_manual.csv")
+    uc = data_dir / "universe.csv"
+    hist = apply_categories(hist, data_dir, pd.read_csv(uc) if uc.exists() else None)
+    hist.to_csv(hist_path, index=False, encoding="utf-8-sig")
+    (data_dir / "last_run.json").write_text(json.dumps({"dates": dates}), encoding="utf-8")
+    build_outputs(hist, out_dir, Path(args.site_dir), [g for g, _, _ in args.group_list])
+    log(f"已合併：遠端最新資料 + 這次重算的 {len(dates)} 個交易日")
+
+
 def main():
     ap = argparse.ArgumentParser(description="美股每日重大個股漲跌幅捕捉器")
     ap.add_argument("--date", help="單一日期 YYYY-MM-DD")
@@ -898,6 +921,7 @@ def main():
     ap.add_argument("--debug", default="", help="逗號分隔的代號，印出它們為什麼有/沒有上榜，例如 --debug FORM,SPY")
     ap.add_argument("--out-dir", default=".", help="輸出資料夾（data/ 歷史與本機 dashboard.html）")
     ap.add_argument("--site-dir", default="site", help="網站版輸出資料夾（部署到 GitHub/GitLab Pages）")
+    ap.add_argument("--merge-from", default="", help="（CI 用）把這次執行的結果合併進遠端最新的歷史資料，避免推送衝突")
     ap.add_argument("--rebuild", action="store_true", help="不抓資料，只用現有歷史重建網站與 dashboard")
     args = ap.parse_args()
     args.group_list = []
@@ -908,6 +932,8 @@ def main():
     min_mcap = min(lo for _, lo, _ in args.group_list)
     global NEWS_DELAY
     NEWS_DELAY = args.news_delay
+    if args.merge_from:
+        return merge_from(args)
     if args.rebuild:
         out_dir = Path(args.out_dir)
         hist_path = out_dir / "data" / "movers_history.csv"
@@ -996,6 +1022,7 @@ def main():
         log(f"{d:%Y-%m-%d}  {cnt}  SPY {rows[0]['spy'] * 100:+.2f}%" if rows else f"{d:%Y-%m-%d}  無資料")
 
     done_dates = {d.strftime("%Y-%m-%d") for d in days}
+    (data_dir / "last_run.json").write_text(json.dumps({"dates": sorted(done_dates)}), encoding="utf-8")
     hist = hist[~hist["date"].isin(done_dates)]
     hist = pd.concat([hist, pd.DataFrame(new_rows, columns=HIST_COLS)], ignore_index=True)
     hist = hist.sort_values(["date", "group", "side", "rank"], ascending=[False, False, False, True])[HIST_COLS]
