@@ -8,6 +8,11 @@ name: daily-movers
 on:
   schedule:
     - cron: "30 22 * * 1-5"      # UTC 22:30 = 美東收盤後，台灣早上 6:30
+    - cron: "15 1 * * 2-6"       # 備援：台灣早上 9:15 再跑一次（GitHub 排程偶爾延遲或漏跑；已抓過的會沿用，不會重複）
+  push:                          # 你貼上 AI 整理的事件後，自動重建網站（不重抓股價）
+    paths:
+      - data/events_manual.csv
+      - data/themes_manual.csv
   workflow_dispatch:
     inputs:
       args:
@@ -26,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -37,17 +42,24 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MOVERS_ARGS: ${{ vars.MOVERS_ARGS }}
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}   # 選用：填「名稱 你的email」，SEC 要求提供聯絡方式
           EXTRA_ARGS: ${{ github.event.inputs.args }}
-        run: python us_movers.py $MOVERS_ARGS $EXTRA_ARGS
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            python us_movers.py --rebuild
+          else
+            python us_movers.py $MOVERS_ARGS $EXTRA_ARGS
+          fi
       - name: 把歷史資料存回 repo
         run: |
           git config user.name "movers-bot"
           git config user.email "movers-bot@users.noreply.github.com"
           git add data
           git commit -m "movers $(date -u +%F)" || echo "no changes"
+          git pull --rebase || true
           git push
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
   deploy:
@@ -58,4 +70,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
