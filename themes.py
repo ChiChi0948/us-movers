@@ -99,6 +99,19 @@ _KW = [(n, allow, re.compile(p, re.I)) for n, allow, p in KEYWORD_THEMES]
 
 # ───────────── 3. Yahoo 產業別 → (大分類, 細分類) ─────────────
 INDUSTRY_RULES = [
+    # Nasdaq 產業別（Yahoo 抓不到時的備援）
+    (r"prepackaged software|edp services|computer software", "軟體", "軟體服務"),
+    (r"computer communications equipment|telecommunications equipment", "硬體與網通", "通訊設備"),
+    (r"computer manufacturing|computer peripheral", "硬體與網通", "電腦硬體"),
+    (r"major pharmaceuticals|pharmaceutical preparations", "醫藥生技", "製藥"),
+    (r"medical/dental instruments|medical specialities|medical electronics", "醫療器材與服務", "醫療器材"),
+    (r"major banks|savings institutions|commercial banks", "金融", "銀行"),
+    (r"investment bankers|brokers", "金融", "券商/投資銀行"),
+    (r"real estate investment trust", "房地產", "REIT"),
+    (r"military/government", "航太國防", "航太國防"),
+    (r"auto manufacturing|motor vehicles", "汽車", "汽車製造"),
+    (r"electric utilities|power generation", "公用事業", "電力/公用事業"),
+    (r"oil & gas production|integrated oil|oil refining", "能源", "石油天然氣"),
     (r"semiconductor equipment", "半導體", "半導體設備"),
     (r"semiconductor", "半導體", "半導體"),
     (r"software - infrastructure", "軟體", "基礎架構軟體"),
@@ -177,7 +190,7 @@ SECTOR_ZH = {
 
 def keyword_theme(summary: str, cat1: str, limit: int = 3) -> str:
     """從業務描述找主題（可多個）；只有在允許的大分類內才套用。"""
-    if not summary:
+    if not isinstance(summary, str) or not summary:
         return ""
     hits = [name for name, allow, rx in _KW if (allow is None or cat1 in allow) and rx.search(summary)]
     specific = [h for h in hits if h not in GENERIC]
@@ -185,49 +198,89 @@ def keyword_theme(summary: str, cat1: str, limit: int = 3) -> str:
 
 
 def from_industry(industry: str, sector: str) -> tuple[str, str]:
+    industry = industry if isinstance(industry, str) else ""
+    sector = sector if isinstance(sector, str) else ""
     for rx, c1, c2 in _IR:
         if industry and rx.search(industry):
             return c1, c2
-    c1 = SECTOR_ZH.get(str(sector or "").strip().lower(), "")
-    return c1, (industry or "")
+    c1 = SECTOR_ZH.get(sector.strip().lower(), "")
+    return c1, industry
 
 
-def load_manual_themes(path: Path) -> dict[str, tuple[str, str]]:
-    """themes_manual.csv：ticker,大分類,細分類
-    細分類可以寫多個，用「、」或「;」分隔，也可以直接多寫幾欄：
-      MRVL,半導體,客製化 ASIC、光通訊
-      MRVL,半導體,客製化 ASIC,光通訊"""
+_DATE = re.compile(r"^\d{4}[-/]\d{1,2}[-/]\d{1,2}$")
+SRC_RANK = {"manual": 5, "curated": 4, "keyword": 3, "industry": 2, "nasdaq": 1, "": 0}
+
+
+def load_manual_rules(path: Path) -> dict[str, list[tuple[str, str, str, str]]]:
+    """themes_manual.csv：ticker,大分類,細分類,起日,迄日
+    - 細分類可寫多個，用「、」或「;」分隔
+    - 起日、迄日可省略；省略代表不限。同一檔可以寫多行，代表不同時期的分類：
+        IREN,金融,比特幣/加密,,2025-12-31
+        IREN,軟體,AI 算力/資料中心、比特幣/加密,2026-01-01,
+    回傳 {ticker: [(起日, 迄日, 大分類, 細分類), ...]}"""
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("ticker,大分類,細分類\n", encoding="utf-8")
+        path.write_text("ticker,大分類,細分類,起日,迄日\n", encoding="utf-8")
         return {}
-    out = {}
+    out: dict[str, list] = {}
     with path.open(encoding="utf-8-sig") as f:
         for cells in csv.reader(f):
             cells = [c.strip() for c in cells]
-            if len(cells) >= 2 and cells[0] and cells[0].lower() != "ticker":
-                themes = [x.strip() for c in cells[2:] for x in _SPLIT.split(c) if x.strip()]
-                out[cells[0].upper()] = (cells[1], SEP.join(dict.fromkeys(themes)))
+            if len(cells) < 2 or not cells[0] or cells[0].lower() == "ticker":
+                continue
+            themes, dates = [], []
+            for i, c in enumerate(cells[2:], start=2):
+                if i >= 3 and (c == "" or _DATE.match(c)):
+                    dates.append(c.replace("/", "-"))
+                else:
+                    themes += [x.strip() for x in _SPLIT.split(c) if x.strip()]
+            start = dates[0] if len(dates) > 0 and dates[0] else "0000-00-00"
+            end = dates[1] if len(dates) > 1 and dates[1] else "9999-99-99"
+            # 日期補零：2026-1-5 → 2026-01-05
+            norm = lambda d: "-".join(x.zfill(2) for x in d.split("-")) if d[0] != "0" and d[0] != "9" else d
+            out.setdefault(cells[0].upper(), []).append(
+                (norm(start), norm(end), cells[1], SEP.join(dict.fromkeys(themes))))
     return out
+
+
+def manual_at(rules: dict, ticker: str, date: str):
+    """回傳該日期適用的手動分類 (大分類, 細分類)；多行都符合時以最後一行為準。"""
+    hit = None
+    for start, end, c1, c2 in rules.get(ticker.upper(), []):
+        if start <= date <= end and (c1 or c2):
+            hit = (c1, c2)
+    return hit
+
+
+def base_classify(ticker: str, industry: str = "", sector: str = "", kw_theme: str = "",
+                  nasdaq_sector: str = "", from_nasdaq: bool = False) -> tuple[str, str, str]:
+    """不含手動指定的自動分類，回傳 (大分類, 細分類, 來源)。"""
+    t = ticker.upper()
+    if t in THEME_TICKERS:
+        c1, lst = THEME_TICKERS[t]
+        return c1, SEP.join(lst), "curated"
+    c1, c2 = from_industry(industry, sector or nasdaq_sector)
+    src = "nasdaq" if from_nasdaq else ("industry" if industry else "")
+    if kw_theme and isinstance(kw_theme, str):
+        c2, src = kw_theme, "keyword"
+    return c1 or "其他", c2, src
+
+
+def load_manual_themes(path: Path) -> dict[str, tuple[str, str]]:
+    """（相容舊版）不分時期的手動分類。"""
+    rules = load_manual_rules(path)
+    return {t: (r[-1][2], r[-1][3]) for t, r in rules.items() if r}
 
 
 def classify(ticker: str, industry: str = "", sector: str = "", kw_theme: str = "",
              nasdaq_sector: str = "", manual: dict | None = None) -> tuple[str, str]:
-    """回傳 (大分類, 細分類)；細分類可能有多個，以「、」分隔。"""
+    """（相容舊版）回傳 (大分類, 細分類)。"""
     t = ticker.upper()
-    if manual and t in manual:
+    if manual and t in manual and any(manual[t]):
         c1, c2 = manual[t]
-        if c1 or c2:
-            if not c1:
-                c1 = (THEME_TICKERS.get(t) or (from_industry(industry, sector or nasdaq_sector)[0], []))[0]
-            return c1 or "其他", c2
-    if t in THEME_TICKERS:
-        c1, lst = THEME_TICKERS[t]
-        return c1, SEP.join(lst)
-    c1, c2 = from_industry(industry, sector or nasdaq_sector)
-    if kw_theme:
-        c2 = kw_theme
-    return c1 or "其他", c2
+        return c1 or base_classify(t, industry, sector, kw_theme, nasdaq_sector)[0], c2
+    c1, c2, _ = base_classify(t, industry, sector, kw_theme, nasdaq_sector)
+    return c1, c2
 
 
 # ───────────── 細分類的別名（網站「找細分類」搜尋框用）─────────────

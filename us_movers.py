@@ -38,7 +38,7 @@ import sys
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 from pathlib import Path
 
@@ -59,11 +59,34 @@ UA = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 HIST_COLS = ["date", "group", "side", "rank", "ticker", "name", "cat1", "cat2", "sector", "mcap", "price",
-             "ret", "rel", "spy", "vr", "r1m", "r3m", "r6m", "ytd", "r1y", "earn", "tags", "event", "src", "url"]
+             "ret", "rel", "spy", "vr", "r1m", "r3m", "r6m", "ytd", "r1y", "earn", "tags", "event", "src", "url",
+             "cat_src", "cur1", "cur2"]
 
 
 def log(*a):
     print(*a, file=sys.stderr, flush=True)
+
+
+import logging
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)  # Yahoo 拒絕時不要洗版
+
+
+class Breaker:
+    """連續失敗太多次就暫停這個資料來源（例如 Yahoo 對雲端主機回 401），避免白白耗時。"""
+    def __init__(self, name, limit=12):
+        self.name, self.limit, self.fail, self.off = name, limit, 0, False
+
+    def ok(self):
+        self.fail = 0
+
+    def bad(self):
+        self.fail += 1
+        if self.fail >= self.limit and not self.off:
+            self.off = True
+            log(f"  ⚠ {self.name} 連續 {self.fail} 次失敗（Yahoo 可能暫時拒絕雲端主機），本次執行先停用此來源")
+
+
+BR_EARN, BR_INFO, BR_NEWS = Breaker("Yahoo 財報日"), Breaker("Yahoo 公司資料"), Breaker("Yahoo 個股新聞")
 
 
 # ─────────────────────────── 股票池 ───────────────────────────
@@ -89,7 +112,7 @@ def load_universe(data_dir: Path, refresh: bool) -> pd.DataFrame:
         u = pd.read_csv(cache)
         # 用檔案內記錄的日期判斷新舊（GitHub/GitLab 每次 checkout 都會重設檔案時間）
         asof = pd.to_datetime(u["asof"].iloc[0], errors="coerce") if "asof" in u.columns and len(u) else pd.NaT
-        if pd.notna(asof) and (pd.Timestamp.utcnow().tz_localize(None) - asof).days < 7 and u["shares"].notna().any():
+        if pd.notna(asof) and (pd.Timestamp.now("UTC").tz_localize(None) - asof).days < 7 and u["shares"].notna().any():
             return u
 
     try:
@@ -127,7 +150,7 @@ def load_universe(data_dir: Path, refresh: bool) -> pd.DataFrame:
         out["mcap_now"] = np.nan
     data_dir.mkdir(parents=True, exist_ok=True)
     out = out.copy()
-    out["asof"] = datetime.utcnow().strftime("%Y-%m-%d")
+    out["asof"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     out.to_csv(cache, index=False)
     return out
 
@@ -153,6 +176,10 @@ def download_prices(tickers, start, end, chunk=100):
                 a, c, v = df[("Adj Close", t)], df[("Close", t)], df[("Volume", t)]
             except KeyError:
                 continue
+            idx = pd.to_datetime(a.index)
+            if idx.tz is not None:
+                idx = idx.tz_localize(None)
+            a, c, v = a.set_axis(idx), c.set_axis(idx), v.set_axis(idx)
             n = int(a.notna().sum())
             if n and (t not in store or n >= int(store[t][0].notna().sum())):
                 store[t] = (a, c, v)
@@ -197,6 +224,42 @@ def download_prices(tickers, start, end, chunk=100):
         time.sleep(20 * rnd)
         size = 100 if len(missing) > 300 else (25 if rnd == 1 else 10)
         grab(missing, size, 3 * rnd, f"補抓{rnd}")
+
+    # 最新一天只有少數股票有資料時（Yahoo 尚未完整發布），改用「近 5 日、不指定結束日」再抓一次
+    from collections import Counter
+    cnt = Counter()
+    for a, _, _ in store.values():
+        cnt.update(a.dropna().index[-3:])
+    if cnt:
+        newest, top = max(cnt), max(cnt.values())
+        if cnt[newest] < 0.5 * top:
+            log(f"最新交易日 {newest:%Y-%m-%d} 只有 {cnt[newest]} 檔有資料，改用近 5 日模式重抓一次")
+            names = list(store)
+            for i in range(0, len(names), 200):
+                part = names[i:i + 200]
+                try:
+                    df = yf.download(part, period="5d", auto_adjust=False, actions=False,
+                                     progress=False, threads=True, group_by="column")
+                except Exception:
+                    df = None
+                if df is None or df.empty:
+                    continue
+                if not isinstance(df.columns, pd.MultiIndex):
+                    df.columns = pd.MultiIndex.from_product([df.columns, part])
+                for t in part:
+                    try:
+                        a, c, v = df[("Adj Close", t)], df[("Close", t)], df[("Volume", t)]
+                    except KeyError:
+                        continue
+                    idx = pd.to_datetime(a.index)
+                    if idx.tz is not None:
+                        idx = idx.tz_localize(None)
+                    a, c, v = a.set_axis(idx), c.set_axis(idx), v.set_axis(idx)
+                    oa, oc, ov = store[t]
+                    store[t] = (oa.combine_first(a), oc.combine_first(c), ov.combine_first(v))
+                time.sleep(1.5)
+            n2 = sum(1 for a, _, _ in store.values() if pd.notna(a.reindex([newest]).iloc[0]))
+            log(f"  重抓後 {newest:%Y-%m-%d} 有資料：{n2} 檔")
 
     if not store:
         sys.exit("Yahoo 股價完全抓不到（可能被限流），請稍後重跑")
@@ -287,6 +350,8 @@ _earn_cache: dict[str, set] = {}
 def earnings_dates(t):
     if t not in _earn_cache:
         s = set()
+        if BR_EARN.off:
+            return s
         try:
             ed = yf.Ticker(t).get_earnings_dates(limit=40)
             if ed is not None and len(ed):
@@ -294,8 +359,11 @@ def earnings_dates(t):
                 if ix.tz is not None:
                     ix = ix.tz_convert("America/New_York").tz_localize(None)
                 s = set(ix.normalize())
+                BR_EARN.ok()
+            else:
+                BR_EARN.bad()
         except Exception:
-            pass
+            BR_EARN.bad()
         _earn_cache[t] = s
     return _earn_cache[t]
 
@@ -312,7 +380,8 @@ except Exception:  # 沒裝也能跑，只是無法讀 CNBC/Fool 內文
     gnewsdecoder = None
 
 import html as _html
-from themes import classify, keyword_theme, from_industry, load_manual_themes, ALIASES
+from themes import (classify, keyword_theme, from_industry, load_manual_themes, ALIASES,
+                    load_manual_rules, manual_at, base_classify, SRC_RANK)
 
 NEWS_DELAY = 0.6
 FIN_SITES = ["reuters.com", "cnbc.com", "benzinga.com", "fool.com", "marketwatch.com", "barrons.com",
@@ -489,9 +558,13 @@ def why_article(ticker, name, d, prev_d):
 
 # ---- 3. Yahoo Finance 個股新聞（僅限最近）----
 def yahoo_news(ticker, name, win_start, win_end):
+    if BR_NEWS.off:
+        return None
     try:
         items = yf.Ticker(ticker).news or []
+        BR_NEWS.ok() if items else BR_NEWS.bad()
     except Exception:
+        BR_NEWS.bad()
         return None
     best = None
     for it in items:
@@ -597,49 +670,85 @@ def ensure_profiles(tickers, path: Path, limit: int) -> pd.DataFrame:
         log(f"抓取公司產業資料 {len(todo)} 檔（已快取 {len(have)} 檔）")
         rows = []
         for i, t in enumerate(todo, 1):
+            if BR_INFO.off:
+                log(f"  其餘 {len(todo) - i + 1} 檔先用 Nasdaq 產業別分類，下次執行再補抓")
+                break
             try:
                 info = yf.Ticker(t).info or {}
             except Exception:
                 info = {}
+            if not (info.get("industry") or info.get("sector")):
+                BR_INFO.bad()
+                continue  # 沒抓到就不寫入快取，下次會再試
+            BR_INFO.ok()
             sec, ind = info.get("sector", "") or "", info.get("industry", "") or ""
             c1, _ = from_industry(ind, sec)
             summ = info.get("longBusinessSummary", "") or ""
             rows.append({"ticker": t, "yf_sector": sec, "yf_industry": ind,
-                         "kw_theme": keyword_theme(summ, c1), "fetched": datetime.utcnow().strftime("%Y-%m-%d")})
+                         "kw_theme": keyword_theme(summ, c1), "fetched": datetime.now(timezone.utc).strftime("%Y-%m-%d")})
             if i % 50 == 0:
                 log(f"  產業資料 {i}/{len(todo)}")
             time.sleep(0.3)
-        prof = pd.concat([prof, pd.DataFrame(rows, columns=PROFILE_COLS)], ignore_index=True)
+        if rows:
+            prof = pd.concat([prof, pd.DataFrame(rows, columns=PROFILE_COLS)], ignore_index=True)
+        # 清掉以前存下的空白紀錄，讓它們下次重抓
+        prof = prof[(prof["yf_industry"].astype(str) != "") | (prof["yf_sector"].astype(str) != "")]
         prof.to_csv(path, index=False, encoding="utf-8-sig")
     return prof
 
 
 def apply_categories(hist: pd.DataFrame, data_dir: Path, univ: pd.DataFrame | None = None) -> pd.DataFrame:
+    """產業分類（保留當時分類）：
+    - cat1/cat2：上榜「當時」的分類。一旦用可靠的來源（熱門名單、Yahoo 產業別、業務描述）分好，就不再自動改動。
+    - 只有當時分類不可靠（空白，或只是 Nasdaq 粗略產業別的備援）時，才會用更好的資料升級。
+    - themes_manual.csv 手動指定的永遠優先，而且可以用起日、迄日指定適用期間。
+    - cur1/cur2：現在的分類，網站上若和當時不同會另外標示。"""
     if hist.empty:
         return hist
     prof = load_profiles(data_dir / "profiles.csv").set_index("ticker")
-    manual = load_manual_themes(data_dir / "themes_manual.csv")
+    rules = load_manual_rules(data_dir / "themes_manual.csv")
     nas = {}
     if univ is not None and "industry" in univ.columns:
         nas = univ.set_index("ticker")[["sector", "industry"]].to_dict("index")
-    cache = {}
-    c1s, c2s = [], []
-    for t, sec in zip(hist["ticker"], hist["sector"]):
-        if t not in cache:
-            p = prof.loc[t] if t in prof.index else None
-            if isinstance(p, pd.DataFrame):
-                p = p.iloc[-1]
-            ind = p["yf_industry"] if p is not None else ""
-            ysec = p["yf_sector"] if p is not None else ""
-            kw = p["kw_theme"] if p is not None else ""
-            if not ind and t in nas:
-                ind = nas[t].get("industry") or ""
-            cache[t] = classify(t, ind, ysec, kw, str(sec or ""), manual)
-        c1s.append(cache[t][0]); c2s.append(cache[t][1])
-    hist = hist.copy()
-    hist["cat1"], hist["cat2"] = c1s, c2s
-    return hist
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+    base = {}
+    for t in hist["ticker"].unique():
+        p = prof.loc[t] if t in prof.index else None
+        if isinstance(p, pd.DataFrame):
+            p = p.iloc[-1]
+        ind = p["yf_industry"] if p is not None else ""
+        ysec = p["yf_sector"] if p is not None else ""
+        kw = p["kw_theme"] if p is not None else ""
+        from_nas = False
+        if not ind and t in nas:
+            v = nas[t].get("industry")
+            ind = v if isinstance(v, str) else ""
+            from_nas = bool(ind)
+        sec = hist.loc[hist["ticker"] == t, "sector"].iloc[0]
+        base[t] = base_classify(t, ind, ysec, kw, sec if isinstance(sec, str) else "", from_nas)
+
+    hist = hist.copy()
+    for c in ("cat1", "cat2", "cat_src", "cur1", "cur2"):
+        if c not in hist.columns:
+            hist[c] = ""
+        hist[c] = hist[c].fillna("").astype(str)
+    out = {"cat1": [], "cat2": [], "cat_src": [], "cur1": [], "cur2": []}
+    for t, d, c1, c2, src in zip(hist["ticker"], hist["date"], hist["cat1"], hist["cat2"], hist["cat_src"]):
+        b1, b2, bsrc = base[t]
+        m = manual_at(rules, t, d)
+        if m:                                   # 手動指定（含期間）最優先
+            n1, n2, nsrc = (m[0] or b1), m[1], "manual"
+        elif src not in ("", "manual", "nasdaq") and SRC_RANK.get(src, 0) >= 2 and (c1 or c2):
+            n1, n2, nsrc = c1, c2, src           # 當時已有可靠分類 → 保留
+        else:                                   # 沒有分類、只有備援、或手動規則已移除 → 用目前最好的
+            n1, n2, nsrc = b1, b2, bsrc
+        cm = manual_at(rules, t, today)
+        out["cat1"].append(n1); out["cat2"].append(n2); out["cat_src"].append(nsrc)
+        out["cur1"].append((cm[0] or b1) if cm else b1); out["cur2"].append(cm[1] if cm else b2)
+    for k, v in out.items():
+        hist[k] = v
+    return hist
 
 
 def _llm_prompt(row, earn, news, tags=()):
@@ -852,7 +961,11 @@ def manifest(hist: pd.DataFrame, group_order) -> dict:
                 themes[t] = themes.get(t, 0) + 1
         if isinstance(c1, str) and c1:
             cats[c1] = cats.get(c1, 0) + 1
-    return {"updated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "dates": dates,
+    for c2 in hist.get("cur2", []):           # 現在才有的分類也列進提示
+        for t in str(c2 if isinstance(c2, str) else "").split("、"):
+            if t:
+                themes.setdefault(t, 0)
+    return {"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "dates": dates,
             "groups": groups or list(group_order), "years": sorted({d[:4] for d in dates}, reverse=True),
             "themes": dict(sorted(themes.items(), key=lambda x: -x[1])),
             "cats": dict(sorted(cats.items(), key=lambda x: -x[1])), "aliases": ALIASES}
@@ -987,6 +1100,8 @@ def main():
         if last == today and now_ny.hour * 60 + now_ny.minute < 16 * 60 + 30:
             last = idx[-2]  # 今天還沒收盤，用前一個交易日
         days = [last]
+        if last < today and today.weekday() < 5 and now_ny.hour >= 18:
+            log(f"⚠ 最新完整的交易日是 {last:%Y-%m-%d}，Yahoo 可能還沒發布 {today:%Y-%m-%d} 的完整資料；下次執行會自動補上")
         # 自動補漏：如果之前有排程沒跑到，把歷史最後一天之後漏掉的交易日一起補上（最多 10 天）
         if hist_path.exists():
             try:
@@ -1016,10 +1131,11 @@ def main():
         sys.exit(f"報價完整度只有 {ratio:.0%}（低於 {args.min_coverage:.0%}），可能被 Yahoo 限流；這次不更新網站，請稍後重跑")
 
     hist = load_history(hist_path)
-    old_events = {}
+    old_events, old_cats = {}, {}
     if len(hist):
         for _, r in hist.iterrows():
             old_events[(r["date"], r["ticker"])] = (r.get("earn"), r.get("tags"), r.get("event"), r.get("src"), r.get("url"))
+            old_cats[(r["date"], r["ticker"])] = (r.get("cat1"), r.get("cat2"), r.get("cat_src"))
 
     new_rows = []
     for d in days:
@@ -1040,6 +1156,8 @@ def main():
                 row["earn"], row["tags"], row["event"], row["src"], row["url"] = old
             else:
                 attach_event(row, d, prev_d, args, latest)
+            if key in old_cats:   # 重算同一天時，保留當時的產業分類
+                row["cat1"], row["cat2"], row["cat_src"] = old_cats[key]
             new_rows.append(row)
         cnt = "  ".join(f"{g} 漲{sum(r['group'] == g and r['side'] == 'up' for r in rows)}/跌"
                         f"{sum(r['group'] == g and r['side'] == 'down' for r in rows)}" for g, _, _ in args.group_list)
