@@ -177,10 +177,15 @@ def download_prices(tickers, start, end, chunk=100):
     grab(list(tickers), chunk, 1.5, "股價")
 
     def last_day():
-        days = pd.Index([])
+        """以「大多數股票都有資料」的最新一天為準（避免個別股票多出一筆奇怪日期，害全部被判定缺資料）。"""
+        from collections import Counter
+        cnt = Counter()
         for a, _, _ in store.values():
-            days = days.union(a.dropna().index[-1:])
-        return days.max() if len(days) else None
+            cnt.update(a.dropna().index[-5:])
+        if not cnt:
+            return None
+        top = max(cnt.values())
+        return max(d for d, c in cnt.items() if c >= 0.5 * top)
 
     for rnd in range(1, 4):
         ld = last_day()
@@ -188,15 +193,22 @@ def download_prices(tickers, start, end, chunk=100):
                    or ld is None or pd.isna(store[t][0].reindex([ld]).iloc[0])]
         if not missing:
             break
-        log(f"第 {rnd} 輪補抓 {len(missing)} 檔（缺資料或缺最新一天）")
+        log(f"第 {rnd} 輪補抓 {len(missing)} 檔（缺資料或缺 {ld:%Y-%m-%d}）" if ld is not None else f"第 {rnd} 輪補抓 {len(missing)} 檔")
         time.sleep(20 * rnd)
-        grab(missing, 25 if rnd == 1 else 10, 3 * rnd, f"補抓{rnd}")
+        size = 100 if len(missing) > 300 else (25 if rnd == 1 else 10)
+        grab(missing, size, 3 * rnd, f"補抓{rnd}")
 
     if not store:
         sys.exit("Yahoo 股價完全抓不到（可能被限流），請稍後重跑")
     build = lambda k: (pd.DataFrame({t: v[k] for t, v in store.items()}).sort_index()
                        .pipe(lambda d: d.set_axis(pd.to_datetime(d.index).tz_localize(None))))
-    return build(0), build(1), build(2)
+    adj, close, vol = build(0), build(1), build(2)
+    # 刪掉只有少數股票有資料的日期（例如個別股票多出的奇怪日期、尚未完整的當日資料）
+    cnt = adj.notna().sum(axis=1)
+    keep = cnt >= 0.5 * cnt.tail(30).median()
+    if (~keep).any():
+        log(f"略過資料不完整的日期：{', '.join(f'{d:%Y-%m-%d}({c})' for d, c in cnt[~keep].tail(5).items())}")
+    return adj[keep], close[keep], vol[keep]
 
 
 # ─────────────────────────── 計算 ───────────────────────────
